@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#14111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Impostor">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Impostor</title>
+<style>
+  :root {
+    --bg: #14111f;
+    --card: #221d33;
+    --card2: #2d2644;
+    --text: #f3f0ff;
+    --muted: #a59fc0;
+    --accent: #ffcc3d;
+    --danger: #ff4d6d;
+    --ok: #3ddc97;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; justify-content: center; }
+  #app { width: 100%; max-width: 480px; min-height: 100%; padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; }
+  .screen { display: none; flex: 1; flex-direction: column; gap: 16px; animation: fade .25s ease; }
+  .screen.active { display: flex; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  h1 { font-size: 44px; margin: 0; letter-spacing: 1px; }
+  h2 { font-size: 26px; margin: 0; }
+  h3 { font-size: 15px; margin: 0 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  p { margin: 0; line-height: 1.5; color: var(--muted); }
+  .grow { flex: 1; }
+  .center { text-align: center; }
+
+  button { font: inherit; border: 0; cursor: pointer; color: inherit; }
+  .btn { width: 100%; padding: 17px; border-radius: var(--radius); font-size: 18px; font-weight: 700;
+    background: var(--accent); color: #1b1530; transition: transform .1s; }
+  .btn:active { transform: scale(.97); }
+  .btn.secondary { background: var(--card2); color: var(--text); }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .btn:disabled { opacity: .4; }
+
+  .panel { background: var(--card); border-radius: var(--radius); padding: 16px; }
+
+  .players { display: flex; flex-direction: column; gap: 8px; }
+  .player-row { display: flex; align-items: center; gap: 10px; background: var(--card2); border-radius: 12px; padding: 10px 12px; }
+  .player-row span { flex: 1; font-size: 17px; }
+  .icon-btn { width: 34px; height: 34px; border-radius: 10px; background: transparent; color: var(--muted); font-size: 20px; }
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
+  .add-row input { flex: 1; min-width: 0; padding: 13px 14px; border-radius: 12px; border: 2px solid var(--card2);
+    background: var(--bg); color: var(--text); font-size: 17px; outline: none; }
+  .add-row input:focus { border-color: var(--accent); }
+  .add-row button { padding: 0 18px; border-radius: 12px; background: var(--accent); color: #1b1530; font-size: 24px; font-weight: 700; }
+
+  .stepper { display: flex; align-items: center; justify-content: space-between; }
+  .stepper .ctrl { display: flex; align-items: center; gap: 14px; }
+  .stepper button { width: 42px; height: 42px; border-radius: 12px; background: var(--card2); font-size: 22px; font-weight: 700; }
+  .stepper b { font-size: 22px; min-width: 50px; text-align: center; }
+  .stepper + .stepper { margin-top: 12px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 10px 14px; border-radius: 999px; background: var(--card2); color: var(--muted); font-size: 15px; font-weight: 600; }
+  .chip.on { background: var(--accent); color: #1b1530; }
+
+  .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+  .switch { width: 54px; height: 32px; border-radius: 999px; background: var(--card2); position: relative; flex-shrink: 0; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .2s; }
+  .switch.on { background: var(--ok); }
+  .switch.on::after { left: 26px; }
+
+  .logo { font-size: 90px; line-height: 1; }
+  .big-name { font-size: 38px; font-weight: 800; color: var(--accent); word-break: break-word; }
+
+  .reveal-card { flex: 1; min-height: 300px; border-radius: 26px; background: var(--card); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; user-select: none; -webkit-user-select: none; }
+  .reveal-card.impostor { background: linear-gradient(160deg, #5a1630, #2a0f1f); }
+  .reveal-card.word { background: linear-gradient(160deg, #24345c, #1a1f3d); }
+  .secret { font-size: 40px; font-weight: 800; word-break: break-word; }
+  .reveal-card.impostor .secret { color: var(--danger); }
+
+  .timer { font-size: 84px; font-weight: 800; font-variant-numeric: tabular-nums; text-align: center; }
+  .timer.low { color: var(--danger); }
+
+  .vote-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vote-btn { padding: 18px 10px; border-radius: 14px; background: var(--card2); font-size: 17px; font-weight: 700; word-break: break-word; }
+  .vote-btn.sel { background: var(--accent); color: #1b1530; }
+  .vote-btn.out { opacity: .3; text-decoration: line-through; pointer-events: none; }
+
+  .result-emoji { font-size: 80px; }
+  .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--card2); font-size: 14px; color: var(--muted); }
+  .score-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card2); font-size: 17px; }
+  .score-row:last-child { border-bottom: 0; }
+  .rules li { margin-bottom: 10px; color: var(--muted); line-height: 1.5; }
+  .rules b { color: var(--text); }
+  .row { display: flex; gap: 10px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- INÍCIO -->
+  <section class="screen active" id="s-home">
+    <div class="grow"></div>
+    <div class="center">
+      <div class="logo">🕵️</div>
+      <h1>Impostor</h1>
+      <p style="margin-top:8px">Todos sabem a palavra secreta.<br>Menos um.</p>
+    </div>
+    <div class="grow"></div>
+    <button class="btn" onclick="go('s-setup')">Jogar</button>
+    <button class="btn secondary" onclick="go('s-rules')">Como jogar</button>
+    <button class="btn secondary" id="install-btn" style="display:none" onclick="installApp()">📲 Instalar no celular</button>
+    <p class="center" id="ios-hint" style="display:none;font-size:14px">Para instalar no iPhone: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>
+  </section>
+
+  <!-- REGRAS -->
+  <section class="screen" id="s-rules">
+    <h2>Como jogar</h2>
+    <div class="panel">
+      <ol class="rules" style="padding-left:20px;margin:0">
+        <li>Coloque o nome de todos os jogadores (mínimo 3).</li>
+        <li><b>Passe o celular</b>: cada um toca na carta, vê o segredo sozinho e esconde de novo.</li>
+        <li>Todos recebem a <b>mesma palavra</b>, menos o <b>impostor</b>, que não sabe qual é.</li>
+        <li>Na sua vez, cada um fala <b>uma palavra de dica</b>. Não pode ser óbvia demais, senão o impostor descobre!</li>
+        <li>O impostor tenta disfarçar e adivinhar a palavra pelas dicas dos outros.</li>
+        <li>No fim, o grupo <b>vota</b> em quem acha que é o impostor.</li>
+        <li>Se pegarem o impostor, ele ainda tem <b>uma chance de acertar a palavra</b> e roubar a vitória.</li>
+      </ol>
+    </div>
+    <div class="grow"></div>
+    <button class="btn" onclick="go('s-home')">Entendi</button>
+  </section>
+
+  <!-- CONFIGURAÇÃO -->
+  <section class="screen" id="s-setup">
+    <h2>Preparar partida</h2>
+
+    <div class="panel">
+      <h3>Jogadores (<span id="player-count">0</span>)</h3>
+      <div class="players" id="player-list"></div>
+      <form class="add-row" onsubmit="addPlayer(event)">
+        <input id="player-input" maxlength="16" placeholder="Nome do jogador" autocomplete="off">
+        <button type="submit">+</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="stepper">
+        <span>Impostores</span>
+        <div class="ctrl">
+          <button onclick="changeImpostors(-1)">−</button>
+          <b id="impostor-count">1</b>
+          <button onclick="changeImpostors(1)">+</button>
+        </div>
+      </div>
+      <div class="stepper">
+        <span>Tempo de conversa</span>
+        <div class="ctrl">
+          <button onclick="changeTime(-30)">−</button>
+          <b id="time-label">3:00</b>
+          <button onclick="changeTime(30)">+</button>
+        </div>
+      </div>
+      <div class="toggle" onclick="toggleHint()">
+        <div>
+          <div>Dica para o impostor</div>
+          <p style="font-size:14px">O impostor vê a categoria da palavra</p>
+        </div>
+        <div class="switch" id="hint-switch"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Categorias</h3>
+      <div class="chips" id="category-list"></div>
+    </div>
+
+    <button class="btn" id="start-btn" onclick="startRound()">Começar</button>
+    <button class="btn secondary" onclick="go('s-home')">Voltar</button>
+  </section>
+
+  <!-- PASSAR O CELULAR -->
+  <section class="screen" id="s-pass">
+    <div class="grow"></div>
+    <div class="center">
+      <p>Passe o celular para</p>
+      <div class="big-name" id="pass-name"></div>
+      <p style="margin-top:12px">Ninguém mais pode olhar a tela!</p>
+    </div>
+    <div class="grow"></div>
+    <button class="btn" onclick="showSecret()">Sou eu, ver meu segredo</button>
+  </section>
+
+  <!-- VER SEGREDO -->
+  <section class="screen" id="s-secret">
+    <div class="reveal-card" id="secret-card">
+      <p id="secret-label"></p>
+      <div class="secret" id="secret-text"></div>
+      <span class="tag" id="secret-extra"></span>
+    </div>
+    <button class="btn" onclick="hideSecret()">Esconder e passar</button>
+  </section>
+
+  <!-- CONVERSA -->
+  <section class="screen" id="s-talk">
+    <div class="center">
+      <p>Quem começa a dar dica</p>
+      <div class="big-name" id="first-name"></div>
+    </div>
+    <div class="grow"></div>
+    <div class="timer" id="timer">3:00</div>
+    <p class="center">Cada um fala uma palavra de dica, na ordem da roda.<br>Depois conversem e descubram o impostor.</p>
+    <div class="grow"></div>
+    <div class="row">
+      <button class="btn secondary" id="pause-btn" onclick="togglePause()">Pausar</button>
+      <button class="btn secondary" onclick="addTime()">+30s</button>
+    </div>
+    <button class="btn" onclick="goVote()">Ir para votação</button>
+  </section>
+
+  <!-- VOTAÇÃO -->
+  <section class="screen" id="s-vote">
+    <h2>Votação</h2>
+    <p>Votem em voz alta. Toque em quem o grupo escolheu como impostor.</p>
+    <div class="vote-list" id="vote-list"></div>
+    <div class="grow"></div>
+    <button class="btn danger" id="vote-btn" onclick="confirmVote()" disabled>Acusar</button>
+  </section>
+
+  <!-- CHANCE DO IMPOSTOR -->
+  <section class="screen" id="s-guess">
+    <div class="grow"></div>
+    <div class="center">
+      <div class="result-emoji">🎯</div>
+      <h2 id="guess-name"></h2>
+      <p style="margin-top:10px">Última chance: o impostor (ou os impostores, juntos) fala em voz alta qual acha que é a palavra.</p>
+    </div>
+    <div class="grow"></div>
+    <button class="btn secondary" onclick="finish('caught')">Errou a palavra</button>
+    <button class="btn danger" onclick="finish('stolen')">Acertou a palavra</button>
+  </section>
+
+  <!-- RESULTADO -->
+  <section class="screen" id="s-result">
+    <div class="center">
+      <div class="result-emoji" id="result-emoji"></div>
+      <h2 id="result-title"></h2>
+      <p id="result-text" style="margin-top:8px"></p>
+    </div>
+    <div class="panel center">
+      <h3>A palavra era</h3>
+      <div class="secret" id="result-word" style="font-size:32px"></div>
+      <p style="margin-top:12px">Impostor: <b id="result-impostors" style="color:var(--danger)"></b></p>
+    </div>
+    <div class="panel">
+      <h3>Placar</h3>
+      <div id="scoreboard"></div>
+    </div>
+    <div class="grow"></div>
+    <button class="btn" onclick="startRound()">Próxima rodada</button>
+    <button class="btn secondary" onclick="go('s-setup')">Mudar jogadores</button>
+  </section>
+
+</div>
+
+<script>
+const CATEGORIES = {
+  "Comidas": ["Pizza","Lasanha","Feijoada","Brigadeiro","Coxinha","Pastel","Sushi","Hambúrguer","Pipoca","Açaí","Pão de queijo","Churrasco","Tapioca","Sorvete","Panqueca","Macarrão","Omelete","Bolo de cenoura","Cachorro-quente","Salada","Estrogonofe","Mandioca","Pudim","Chocolate","Torrada"],
+  "Lugares": ["Praia","Hospital","Escola","Aeroporto","Cinema","Supermercado","Academia","Biblioteca","Farmácia","Padaria","Estádio","Zoológico","Shopping","Igreja","Delegacia","Parque de diversões","Museu","Fazenda","Restaurante","Rodoviária","Hotel","Piscina","Cemitério","Circo","Floresta"],
+  "Animais": ["Cachorro","Gato","Elefante","Girafa","Tubarão","Pinguim","Leão","Macaco","Cobra","Jacaré","Coruja","Papagaio","Tartaruga","Cavalo","Vaca","Golfinho","Formiga","Abelha","Sapo","Urso","Canguru","Polvo","Galinha","Morcego","Capivara"],
+  "Objetos": ["Guarda-chuva","Celular","Tesoura","Espelho","Relógio","Mochila","Travesseiro","Óculos","Chave","Escova de dentes","Vela","Martelo","Garrafa","Controle remoto","Lanterna","Cadeira","Geladeira","Ventilador","Bola","Caneta","Panela","Carteira","Fone de ouvido","Toalha","Escada"],
+  "Profissões": ["Médico","Bombeiro","Professor","Cozinheiro","Policial","Dentista","Piloto","Jogador de futebol","Cabeleireiro","Pedreiro","Advogado","Motorista de ônibus","Veterinário","Astronauta","Mágico","Fotógrafo","Padeiro","Enfermeiro","Carteiro","Palhaço","Cantor","Jardineiro","Mecânico","Juiz","Programador"],
+  "Esportes": ["Futebol","Vôlei","Basquete","Natação","Tênis","Skate","Surfe","Boxe","Judô","Ciclismo","Corrida","Xadrez","Golfe","Handebol","Futsal","Capoeira","Escalada","Ginástica","Pingue-pongue","Boliche","Balé","Karatê","Hipismo","Esgrima","Patinação"],
+  "Coisas de casa": ["Sofá","Cama","Chuveiro","Fogão","Micro-ondas","Tapete","Cortina","Janela","Porta","Varal","Armário","Pia","Vaso sanitário","Lâmpada","Televisão","Máquina de lavar","Mesa","Ferro de passar","Vassoura","Travesseiro","Banheira","Prateleira","Campainha","Quintal","Garagem"],
+  "Transportes": ["Avião","Bicicleta","Ônibus","Trem","Metrô","Navio","Helicóptero","Moto","Carro","Patinete","Caminhão","Barco","Foguete","Balão","Táxi","Ambulância","Submarino","Teleférico","Jet ski","Trator","Canoa","Carroça","Skate","Lancha","Avião de papel"],
+  "Festas e datas": ["Natal","Carnaval","Ano-novo","Festa junina","Páscoa","Aniversário","Casamento","Halloween","Dia das mães","Formatura","Chá de bebê","Churrasco de domingo","Réveillon na praia","Dia dos namorados","Copa do mundo","Festa do pijama","Amigo secreto","Show de rock","Festa à fantasia","Batizado","Festa surpresa","Dia das crianças","Quermesse","Baile de máscaras","Viagem de férias"]
+};
+
+const STORE_KEY = "impostor-config-v1";
+const state = {
+  players: [],
+  impostors: 1,
+  time: 180,
+  hint: true,
+  cats: Object.keys(CATEGORIES),
+  scores: {},
+  round: null,
+  usedWords: []
+};
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+    Object.assign(state, saved);
+    state.cats = state.cats.filter(c => CATEGORIES[c]);
+    if (!state.cats.length) state.cats = Object.keys(CATEGORIES);
+  } catch (e) {}
+}
+function save() {
+  const { players, impostors, time, hint, cats, scores } = state;
+  localStorage.setItem(STORE_KEY, JSON.stringify({ players, impostors, time, hint, cats, scores }));
+}
+
+const $ = id => document.getElementById(id);
+function go(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $(id).classList.add("active");
+  window.scrollTo(0, 0);
+  if (id === "s-setup") renderSetup();
+}
+function esc(s) { return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function maxImpostors() { return Math.max(1, Math.floor((state.players.length - 1) / 2)); }
+
+/* ---------- Configuração ---------- */
+function renderSetup() {
+  $("player-count").textContent = state.players.length;
+  $("player-list").innerHTML = state.players.map((p, i) =>
+    `<div class="player-row"><span>${esc(p)}</span><button class="icon-btn" onclick="removePlayer(${i})" aria-label="Remover">✕</button></div>`
+  ).join("");
+  state.impostors = Math.min(state.impostors, maxImpostors());
+  $("impostor-count").textContent = state.impostors;
+  $("time-label").textContent = fmt(state.time);
+  $("hint-switch").classList.toggle("on", state.hint);
+  $("category-list").innerHTML = Object.keys(CATEGORIES).map(c =>
+    `<button class="chip ${state.cats.includes(c) ? "on" : ""}" onclick="toggleCat('${c}')">${c}</button>`
+  ).join("");
+  const ok = state.players.length >= 3 && state.cats.length > 0;
+  $("start-btn").disabled = !ok;
+  $("start-btn").textContent = state.players.length < 3 ? `Faltam ${3 - state.players.length} jogador(es)` : "Começar";
+}
+function addPlayer(e) {
+  e.preventDefault();
+  const input = $("player-input");
+  const name = input.value.trim();
+  if (!name) return;
+  if (state.players.some(p => p.toLowerCase() === name.toLowerCase())) { input.value = ""; return; }
+  state.players.push(name);
+  input.value = "";
+  save(); renderSetup();
+  input.focus();
+}
+function removePlayer(i) { state.players.splice(i, 1); save(); renderSetup(); }
+function changeImpostors(d) { state.impostors = Math.min(maxImpostors(), Math.max(1, state.impostors + d)); save(); renderSetup(); }
+function changeTime(d) { state.time = Math.min(600, Math.max(30, state.time + d)); save(); renderSetup(); }
+function toggleHint() { state.hint = !state.hint; save(); renderSetup(); }
+function toggleCat(c) {
+  state.cats = state.cats.includes(c) ? state.cats.filter(x => x !== c) : [...state.cats, c];
+  save(); renderSetup();
+}
+
+/* ---------- Rodada ---------- */
+function startRound() {
+  if (state.players.length < 3) { go("s-setup"); return; }
+  const cat = pick(state.cats);
+  let options = CATEGORIES[cat].filter(w => !state.usedWords.includes(w));
+  if (!options.length) { state.usedWords = []; options = CATEGORIES[cat]; }
+  const word = pick(options);
+  state.usedWords.push(word);
+
+  const order = shuffle(state.players);
+  const impostors = shuffle(state.players).slice(0, Math.min(state.impostors, maxImpostors()));
+  // quem começa a falar nunca é impostor, pra ele não ser o primeiro sem pista nenhuma
+  const starters = state.players.filter(p => !impostors.includes(p));
+
+  state.round = { cat, word, order, impostors, idx: 0, first: pick(starters), out: [], selected: null };
+  showPass();
+}
+function showPass() {
+  $("pass-name").textContent = state.round.order[state.round.idx];
+  go("s-pass");
+}
+function showSecret() {
+  const r = state.round;
+  const name = r.order[r.idx];
+  const isImp = r.impostors.includes(name);
+  const card = $("secret-card");
+  card.className = "reveal-card " + (isImp ? "impostor" : "word");
+  $("secret-label").textContent = isImp ? name + ", você é o" : name + ", a palavra é";
+  $("secret-text").textContent = isImp ? "IMPOSTOR" : r.word;
+  const extra = $("secret-extra");
+  if (isImp) {
+    extra.style.display = state.hint ? "" : "none";
+    extra.textContent = "Categoria: " + r.cat;
+  } else {
+    extra.style.display = "";
+    extra.textContent = r.impostors.length > 1 ? `Há ${r.impostors.length} impostores` : "Descubra quem não sabe a palavra";
+  }
+  go("s-secret");
+}
+function hideSecret() {
+  const r = state.round;
+  r.idx++;
+  if (r.idx < r.order.length) showPass();
+  else startTalk();
+}
+
+/* ---------- Conversa com cronômetro ---------- */
+let timerId = null, remaining = 0, paused = false;
+function startTalk() {
+  $("first-name").textContent = state.round.first;
+  remaining = state.time; paused = false;
+  $("pause-btn").textContent = "Pausar";
+  renderTimer();
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    if (paused) return;
+    remaining--;
+    renderTimer();
+    if (remaining <= 0) { clearInterval(timerId); beep(); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); }
+  }, 1000);
+  go("s-talk");
+}
+function renderTimer() {
+  const t = $("timer");
+  t.textContent = remaining > 0 ? fmt(remaining) : "Tempo!";
+  t.classList.toggle("low", remaining <= 10);
+}
+function togglePause() { paused = !paused; $("pause-btn").textContent = paused ? "Continuar" : "Pausar"; }
+function addTime() {
+  const restart = remaining <= 0;
+  remaining = Math.max(0, remaining) + 30; renderTimer();
+  if (restart) { clearInterval(timerId); timerId = setInterval(() => { if (paused) return; remaining--; renderTimer(); if (remaining <= 0) { clearInterval(timerId); beep(); } }, 1000); }
+}
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.35].forEach(t => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.3, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.3);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.3);
+    });
+  } catch (e) {}
+}
+
+/* ---------- Votação ---------- */
+function goVote() {
+  clearInterval(timerId);
+  state.round.selected = null;
+  renderVote();
+  go("s-vote");
+}
+function renderVote() {
+  const r = state.round;
+  $("vote-list").innerHTML = state.players.map((p, i) =>
+    `<button class="vote-btn ${r.selected === p ? "sel" : ""} ${r.out.includes(p) ? "out" : ""}" onclick="selectVote(${i})">${esc(p)}</button>`
+  ).join("");
+  $("vote-btn").disabled = !r.selected;
+  $("vote-btn").textContent = r.selected ? "Acusar " + r.selected : "Acusar";
+}
+function selectVote(i) { state.round.selected = state.players[i]; renderVote(); }
+function confirmVote() {
+  const r = state.round;
+  const who = r.selected;
+  if (!who) return;
+  if (r.impostors.includes(who)) {
+    r.out.push(who);
+    const left = r.impostors.filter(p => !r.out.includes(p));
+    if (left.length) {
+      // ainda há impostores escondidos: continua a votação
+      alert(who + " era impostor! Mas ainda falta " + (left.length === 1 ? "1 impostor." : left.length + " impostores."));
+      r.selected = null; renderVote();
+      return;
+    }
+    $("guess-name").textContent = r.impostors.length > 1 ? "Todos os impostores foram pegos!" : who + " era impostor!";
+    go("s-guess");
+  } else {
+    r.innocent = who;
+    finish("wrong");
+  }
+}
+
+/* ---------- Resultado e placar ---------- */
+function finish(outcome) {
+  const r = state.round;
+  const crew = state.players.filter(p => !r.impostors.includes(p));
+  const add = (list, pts) => list.forEach(p => state.scores[p] = (state.scores[p] || 0) + pts);
+  const impNames = r.impostors.join(" e ");
+
+  if (outcome === "caught") {
+    add(crew, 1);
+    show("🎉", "O grupo venceu!", "O impostor foi pego e não acertou a palavra. +1 ponto para cada um do grupo.");
+  } else if (outcome === "stolen") {
+    add(r.impostors, 2);
+    show("😈", "O impostor roubou a vitória!", "Foi pego, mas acertou a palavra. +2 pontos para o impostor.");
+  } else {
+    add(r.impostors, 3);
+    show("🕵️", "O impostor venceu!", `${r.innocent} era inocente. O impostor escapou e ganha +3 pontos.`);
+  }
+  $("result-word").textContent = r.word;
+  $("result-impostors").textContent = impNames;
+  renderScores();
+  save();
+  go("s-result");
+}
+function show(emoji, title, text) {
+  $("result-emoji").textContent = emoji;
+  $("result-title").textContent = title;
+  $("result-text").textContent = text;
+}
+function renderScores() {
+  const rows = state.players.map(p => [p, state.scores[p] || 0]).sort((a, b) => b[1] - a[1]);
+  $("scoreboard").innerHTML = rows.map(([p, s], i) =>
+    `<div class="score-row"><span>${i === 0 && s > 0 ? "👑 " : ""}${esc(p)}</span><b>${s}</b></div>`
+  ).join("") + `<button class="btn secondary" style="margin-top:12px;padding:12px;font-size:15px" onclick="resetScores()">Zerar placar</button>`;
+}
+function resetScores() { state.scores = {}; save(); renderScores(); }
+
+// evita sair do jogo sem querer no meio da rodada
+window.addEventListener("beforeunload", e => { if (state.round && !$("s-result").classList.contains("active")) { e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- Instalar como app ---------- */
+let installPrompt = null;
+const installed = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  installPrompt = e;
+  $("install-btn").style.display = "";
+});
+window.addEventListener("appinstalled", () => { $("install-btn").style.display = "none"; });
+async function installApp() {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  $("install-btn").style.display = "none";
+}
+if (!installed && /iphone|ipad|ipod/i.test(navigator.userAgent)) $("ios-hint").style.display = "";
+if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js");
+
+load();
+</script>
+</body>
+</html>
