@@ -52,7 +52,7 @@
     background-image:
       linear-gradient(rgba(15,36,53,.045) 1px, transparent 1px),
       linear-gradient(90deg, rgba(15,36,53,.045) 1px, transparent 1px);
-    background-size: 24px 24px; background-position: -1px -1px;
+    background-size: 24px 24px; background-position: -1px -1px; background-attachment: fixed;
     caret-color: var(--amber);
   }
   ::selection { background: var(--sky); color: var(--ink); }
@@ -72,9 +72,24 @@
   #app::after { bottom: calc(8px + env(safe-area-inset-bottom)); right: max(8px, calc(50% - 222px)); border-width: 0 1px 1px 0; }
 
   .screen { display: none; min-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); flex-direction: column; }
-  .screen.active { display: flex; animation: in-r .3s var(--ease); }
-  html[data-dir="back"] .screen.active { animation-name: in-l; }
-  html.vt .screen.active { animation: none; }
+  .screen.active { display: flex; }
+  /* troca de tela estilo app nativo: as duas telas ficam opacas o tempo todo */
+  #app { overflow-x: clip; }
+  .screen.leaving { display: flex; position: absolute; z-index: 1; pointer-events: none; }
+  .screen.entering { position: relative; z-index: 2; }
+  .screen.leaving, .screen.entering {
+    background-color: var(--paper);
+    background-image: linear-gradient(rgba(15,36,53,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(15,36,53,.045) 1px, transparent 1px);
+    background-size: 24px 24px; background-position: -1px -1px; background-attachment: fixed;
+    margin: 0 calc(var(--pad) * -1); padding-left: var(--pad); padding-right: var(--pad); }
+  .screen.entering.nav-fwd { animation: push-in .34s var(--ease) both; box-shadow: -18px 0 36px -24px rgba(15,36,53,.35); }
+  .screen.leaving.nav-fwd { animation: push-under .34s var(--ease) both; }
+  .screen.leaving.nav-back { z-index: 3; animation: pop-away .3s var(--ease) both; box-shadow: -18px 0 36px -24px rgba(15,36,53,.35); }
+  .screen.entering.nav-back { animation: pop-under .3s var(--ease) both; }
+  @keyframes push-in { from { transform: translateX(100%); } }
+  @keyframes push-under { to { transform: translateX(-24%); } }
+  @keyframes pop-away { to { transform: translateX(100%); } }
+  @keyframes pop-under { from { transform: translateX(-24%); } }
   @keyframes enter { from { opacity: 0; transform: translateY(6px); } }
   @keyframes in-r { from { opacity: 0; transform: translateX(26px); } }
   @keyframes in-l { from { opacity: 0; transform: translateX(-26px); } }
@@ -82,11 +97,7 @@
   @keyframes out-r { to { opacity: 0; transform: translateX(26px); } }
 
   /* troca de tela com View Transitions (Chrome/Safari novos) */
-  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; animation-timing-function: var(--ease); }
-  html[data-dir="fwd"]::view-transition-old(root) { animation-name: out-l; }
-  html[data-dir="fwd"]::view-transition-new(root) { animation-name: in-r; }
-  html[data-dir="back"]::view-transition-old(root) { animation-name: out-r; }
-  html[data-dir="back"]::view-transition-new(root) { animation-name: in-l; }
+
 
   /* micro-animações de seleção */
   @keyframes press { 40% { transform: scale(.95); } 100% { transform: scale(1); } }
@@ -369,6 +380,7 @@
     .sticky-foot { background: linear-gradient(transparent, var(--sheet) 30%); margin: 0 -30px; padding: 16px 30px 0; }
     .envelope, .cred { background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
     .file { background: var(--paper); }
+    .screen.leaving, .screen.entering { background: var(--sheet); margin: 0 -30px; padding-left: 30px; padding-right: 30px; }
     .file[aria-pressed="true"] { background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--ink); }
   }
 </style>
@@ -729,7 +741,12 @@ const vibrate = p => { try { navigator.vibrate && navigator.vibrate(p); } catch 
 /* ---------- Navegação: desliza entre telas e respeita o botão voltar do celular ---------- */
 const ROUND_SCREENS = new Set(["s-pass", "s-secret", "s-talk", "s-vote", "s-guess", "s-result"]);
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-let current = "s-home", activeVT = null;
+let current = "s-home", leavingEl = null, enteringEl = null, navTimer = 0;
+function endNav() {
+  clearTimeout(navTimer);
+  if (leavingEl) { leavingEl.classList.remove("leaving", "nav-fwd", "nav-back"); leavingEl.style.cssText = ""; leavingEl = null; }
+  if (enteringEl) { enteringEl.classList.remove("entering", "nav-fwd", "nav-back"); enteringEl = null; }
+}
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
@@ -742,17 +759,22 @@ function show(id) {
   if (id === "s-pass") fitName($("pass-name"));
 }
 function go(id, dir = "fwd") {
-  const root = document.documentElement;
+  endNav();
+  const root = document.documentElement, from = document.querySelector(".screen.active");
   root.dataset.dir = dir;
   current = id;
   // a credencial tem sua própria abertura (o selo se rompe)
-  if (activeVT) activeVT.skipTransition();
-  if (document.startViewTransition && !reducedMotion && id !== "s-secret") {
-    root.classList.add("vt");
-    const t = activeVT = document.startViewTransition(() => show(id));
-    t.ready.catch(() => {});
-    t.finished.catch(() => {}).finally(() => { if (activeVT === t) { activeVT = null; root.classList.remove("vt"); } });
-  } else show(id);
+  if (!from || from.id === id || reducedMotion || id === "s-secret") { show(id); return; }
+  // congela a tela antiga onde ela está na janela, e a nova desliza por cima
+  const app = $("app"), r = from.getBoundingClientRect(), a = app.getBoundingClientRect();
+  from.classList.add("leaving", "nav-" + dir);
+  const pad = parseFloat(getComputedStyle(from).paddingLeft) || 0;
+  from.style.cssText = `top:${r.top - a.top - scrollY}px;left:${r.left - a.left}px;width:${r.width + 2 * pad}px;`;
+  leavingEl = from;
+  show(id);
+  enteringEl = $(id);
+  enteringEl.classList.add("entering", "nav-" + dir);
+  navTimer = setTimeout(endNav, 380);
 }
 // Cada tela tem uma "tela anterior" fixa. O voltar do jogo e o do celular fazem a mesma coisa.
 const PARENT = { "s-rules": "s-home", "s-setup": "s-home", "s-files": "s-setup", "s-vote": "s-talk" };
