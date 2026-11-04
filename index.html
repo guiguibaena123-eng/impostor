@@ -441,19 +441,8 @@
   .cover-title { position: relative; }
 
 
-  /* vez de falar */
+  /* quem começa */
   .first { gap: 10px; }
-  .spk-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 2px; }
-  .spk { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px 0 3px; border-radius: 4px;
-    background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); font-size: 14px; font-weight: 600; color: var(--ink);
-    transition: box-shadow .25s, background .25s, opacity .25s, transform .15s var(--ease); max-width: 100%; }
-  .spk .av { width: 30px; height: 30px; font-size: 11.5px; }
-  .spk span.nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 9.5em; }
-  .spk.done { opacity: .5; }
-  .spk.done::after { content: ""; position: absolute; left: 21px; top: -5px; width: 15px; height: 15px; border-radius: 50%;
-    background: var(--sky-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/11px no-repeat; }
-  .spk.now { box-shadow: inset 0 0 0 2px var(--sky-deep); background: var(--sky-wash); opacity: 1; }
-  .spk:active { transform: scale(.95); }
   .first .who .v { animation: rise .35s var(--ease); display: block; }
   .who-txt { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
   .who-txt .v { overflow-wrap: anywhere; }
@@ -522,7 +511,7 @@
   .summary b { color: var(--ink); }
 
   .steps.stagger > li { animation-delay: calc(.1s + var(--i, 0) * 60ms); }
-  @media (hover: hover) { .recent button:hover, .spk:hover { background: var(--paper-2); } .peek:hover .peek-cover { color: var(--ink); } }
+  @media (hover: hover) { .recent button:hover { background: var(--paper-2); } .peek:hover .peek-cover { color: var(--ink); } }
 
   /* painel de confirmação */
   .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; justify-items: center;
@@ -828,13 +817,12 @@
     <div class="first">
       <span class="who" id="first-who"></span>
     </div>
-    <div class="spk-list" id="spk-list" aria-label="Ordem de quem fala"></div>
     <div class="clock" id="clock">
       <div class="t" id="timer">3:00</div>
       <div class="track"><div class="fill" id="timer-fill"></div></div>
       <div class="status" id="timer-status" aria-live="polite"></div>
     </div>
-    <p class="talk-help" id="talk-help" aria-live="polite">Cada um diz uma palavra de dica, na ordem da lista.</p>
+    <p class="talk-help" id="talk-help" aria-live="polite">Cada um diz uma palavra de dica, seguindo a roda.</p>
     <div class="foot">
       <div class="row2">
         <button class="btn line" id="pause-btn" onclick="togglePause()"><svg class="i"><use href="#i-pause"/></svg> Pausar</button>
@@ -1043,7 +1031,7 @@ function show(id) {
   fitLines($(id));
   if (id === "s-pass") fitName($("pass-name"));
   if (id === "s-vote") fitSuspects();
-  if (id === "s-talk" && state.round && state.round.speak) renderSpeakers();
+  if (id === "s-talk" && state.round) renderFirst();
 }
 function go(id, dir = "fwd") {
   endNav();
@@ -1534,12 +1522,10 @@ function hideSecret() {
 
 /* ---------- Pistas e cronômetro ---------- */
 let timerId = null, remaining = 0, total = 0, paused = false;
-// ordem da roda: começa em quem foi sorteado e segue a lista de jogadores
+// mostra só quem foi sorteado para começar
 function startTalk() {
-  const r = state.round, at = Math.max(0, state.players.indexOf(r.first));
-  r.speak = { order: [...state.players.slice(at), ...state.players.slice(0, at)], idx: 0, lap: 1, done: [] };
-  renderSpeakers();
-  $("talk-help").innerHTML = "Cada um diz uma palavra de dica, na ordem da lista.";
+  renderFirst();
+  $("talk-help").innerHTML = "Cada um diz uma palavra de dica, seguindo a roda.";
   remaining = total = state.time; paused = false;
   setPauseBtn();
   renderTimer();
@@ -1562,16 +1548,12 @@ function renderTimer() {
   $("timer-status").textContent = remaining <= 0 ? "Tempo esgotado. Hora de votar." : paused ? "Pausado" : "";
   $("vote-go").classList.toggle("due", remaining <= 0);
 }
-function renderSpeakers() {
-  const sp = state.round.speak, who = sp.order[sp.idx];
-  const label = sp.lap > 1 ? `${sp.lap}ª volta · vez de` : (sp.idx === 0 && !sp.done.length ? "Começa" : "Vez de");
-  $("first-who").innerHTML = avatar(who, "lg") + `<span class="who-txt"><span class="k" id="spk-k">${label}</span><span class="v">${esc(who)}</span></span>`;
-  $("spk-list").innerHTML = sp.order.map((p, i) =>
-    `<button class="spk ${sp.done.includes(p) ? "done" : ""} ${i === sp.idx ? "now" : ""}" onclick="setSpeaker(${i})" aria-label="${esc(p)}${sp.done.includes(p) ? ", já falou" : ""}">${avatar(p)}<span class="nm">${esc(p)}</span></button>`).join("");
+function renderFirst() {
+  const who = state.round.first;
+  $("first-who").innerHTML = avatar(who, "lg") + `<span class="who-txt"><span class="k">Começa</span><span class="v">${esc(who)}</span></span>`;
   const v = document.querySelector("#first-who .v");
   if (v && v.clientWidth) fitName(v, 24, 13);
 }
-function setSpeaker(i) { state.round.speak.idx = i; tap(); renderSpeakers(); }
 function setPauseBtn() {
   $("pause-btn").innerHTML = paused
     ? '<svg class="i"><use href="#i-play"/></svg> Continuar'
