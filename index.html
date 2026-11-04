@@ -8,12 +8,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Impostor">
+<meta name="apple-mobile-web-app-title" content="Segredo">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preload" href="fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
-<title>Impostor</title>
+<title>Segredo de Estado</title>
 <style>
   @font-face { font-family: "Archivo"; src: url("fonts/archivo.woff2") format("woff2");
     font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
@@ -569,6 +569,7 @@
     .dossier { padding: 12px 10px 24px; }
     .dseal { width: 54px; height: 54px; bottom: -28px; }
     .cover-title { margin-top: 0; }
+    #cover-facts { display: none; }
     #s-home .bar { margin-bottom: 10px; }
     .cover-line { font-size: 16px; }
     .cover-line { font-size: 17px; }
@@ -634,7 +635,7 @@
       <span class="code">Dossiê <b id="case-no">Nº 0000</b></span>
       <span class="code" style="color:var(--amber-deep)">Confidencial</span>
     </div>
-    <h1 class="cover-title fit-line" data-max="150">Impostor</h1>
+    <h1 class="cover-title" aria-label="Segredo de Estado"><span class="fit-line" data-max="150">Segredo</span><span class="fit-line" data-max="150">de Estado</span></h1>
     <div class="cover-rule"></div>
     <p class="code" id="cover-facts" style="margin:0 0 14px"></p>
     <p class="cover-line">Todos sabem a palavra secreta. <em>Menos um.</em></p>
@@ -662,7 +663,7 @@
       <span class="code">Instalação</span>
     </div>
     <h2>Baixe o app</h2>
-    <p class="app-lead">Instale o Impostor no celular para abrir pelo ícone, em tela cheia e sem internet. Qual é o seu celular?</p>
+    <p class="app-lead">Instale o Segredo de Estado no celular para abrir pelo ícone, em tela cheia e sem internet. Qual é o seu celular?</p>
     <div class="app-opts stagger">
       <button class="opt" id="opt-android" style="--i:1" onclick="appSteps('android')"><svg class="i"><use href="#i-android"/></svg><span><b>Android</b><small>Samsung, Motorola, Xiaomi e outros</small></span><span class="tag" hidden>O seu</span></button>
       <button class="opt" id="opt-ios" style="--i:2" onclick="appSteps('ios')"><svg class="i"><use href="#i-apple"/></svg><span><b>iPhone</b><small>Apple (também iPad)</small></span><span class="tag" hidden>O seu</span></button>
@@ -1528,6 +1529,8 @@ function fitLines(root = document) {
     if (!el.offsetParent) return;
     const maxW = el.parentElement.clientWidth;
     let lo = 20, hi = +el.dataset.max || 120;
+    // celular baixo: o nome em 2 linhas fica menor para a capa caber sem rolar
+    if (el.parentElement.classList.contains("cover-title") && matchMedia("(max-height: 640px)").matches) hi = 40;
     while (hi - lo > 1) { const mid = (lo + hi) >> 1; el.style.fontSize = mid + "px"; el.scrollWidth <= maxW ? (lo = mid) : (hi = mid); }
     el.style.fontSize = lo + "px";
   });
@@ -1815,14 +1818,14 @@ const APP_STEPS = {
     "Toque nos <b>três pontinhos ⋮</b>, no canto de cima.",
     "Toque em <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>).",
     "Confirme tocando em <b>Instalar</b>.",
-    "Pronto! Abra o <b>Impostor</b> pelo ícone na tela do celular.",
+    "Pronto! Abra o <b>Segredo</b> pelo ícone na tela do celular.",
   ],
   ios: [
     "Abra este site no <b>Safari</b>.",
     "Toque no botão <b>Compartilhar</b> (o quadrado com uma seta para cima). Se não aparecer, toque antes em <b>•••</b>.",
     "Role a lista e toque em <b>Adicionar à Tela de Início</b>.",
     "Toque em <b>Adicionar</b>, no canto de cima.",
-    "Pronto! Abra o <b>Impostor</b> pelo ícone na tela de início.",
+    "Pronto! Abra o <b>Segredo</b> pelo ícone na tela de início.",
   ],
 };
 let appOS = "android";
