@@ -279,24 +279,57 @@
   /* ===== ENVELOPE (passar o celular) ===== */
   .handoff-to { color: var(--ink-2); font-size: 15px; margin: 4px 0 6px; }
   .handoff-name { font-size: 48px; font-weight: 900; line-height: .98; overflow-wrap: normal; word-break: normal; hyphens: none; }
-  .envelope { position: relative; flex: 1; min-height: 300px; margin-top: 22px; border-radius: 4px; background: var(--sheet);
-    box-shadow: 0 1px 2px rgba(15,36,53,.08), 0 18px 40px -22px rgba(15,36,53,.45); overflow: hidden;
-    display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-  .envelope .flap { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .envelope .flap path { fill: none; stroke: var(--rule); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
-  .envelope .stamp-line { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; justify-content: space-between; }
-  .hold { position: relative; width: 150px; height: 150px; display: grid; place-items: center; margin-top: 18px; }
-  .hold .seal { width: 112px; height: 112px; transition: transform .35s var(--ease); }
-  .hold.pressing .seal { transform: scale(.94); }
-  .hold .ring { position: absolute; inset: 0; transform: rotate(-90deg); }
-  .hold .ring circle { fill: none; stroke-width: 3; }
-  .hold .ring .track { stroke: var(--rule-soft); }
-  .hold .ring .prog { stroke: var(--amber); stroke-linecap: round; stroke-dasharray: 452.4; stroke-dashoffset: 452.4; }
-  .hold-label { position: absolute; bottom: 44px; left: 0; right: 0; text-align: center; font-stretch: 125%; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+  /* envelope de verdade: puxar para cima abre o lacre, a aba e tira o cartão */
+  .envelope { position: relative; z-index: 5; flex: 1; min-height: 300px; margin-top: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 8px 0 12px;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; outline: none; }
+  .envelope.dragging { cursor: grabbing; }
+  .envelope:focus-visible .env-back { box-shadow: 0 0 0 3px var(--sky-deep); }
+  .env { --fa: 0deg; --cy: 0px; --cr: 0deg; position: relative; width: 100%; max-width: 400px; aspect-ratio: 1.42; perspective: 1100px; margin: 0 auto 4px; }
+  .env-back { position: absolute; inset: 0; border-radius: 6px; background: #D5DEE5; box-shadow: 0 1px 2px rgba(15,36,53,.1), 0 24px 44px -26px rgba(15,36,53,.55); }
+  .env-card { position: absolute; z-index: 2; left: 6%; right: 6%; top: 5%; height: 90%; border-radius: 4px; overflow: hidden; background: var(--sheet);
+    box-shadow: 0 1px 2px rgba(15,36,53,.12), 0 calc(-1 * var(--lift, 0px)) 30px -18px rgba(15,36,53,.5);
+    transform: translateY(var(--cy)) rotate(var(--cr)); will-change: transform; }
+  .env-card .band { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: var(--sky); }
+  .env-card .band .code { color: var(--ink); font-size: 11px; }
+  .env-card .lines { padding: 14px 12px; display: grid; gap: 9px; }
+  .env-card .lines i { display: block; height: 7px; border-radius: 2px; background: var(--paper-2); }
+  .env-card .lines i.dark { height: 18px; width: 70%; background: var(--ink); opacity: .9; margin: 6px 0 4px; }
+  .env-front { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .env-to { position: absolute; z-index: 3; left: 0; right: 0; bottom: 6%; text-align: center; pointer-events: none; }
+  .env-to .code { font-size: 11px; color: var(--ink-3); }
+  .env-to b { display: block; margin-top: 2px; font-stretch: 112%; font-size: 17px; font-weight: 800; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 22%; }
+  .env-flap { position: absolute; z-index: 4; left: 0; top: 0; width: 100%; height: 54%; overflow: visible; transform-origin: 50% 0; transform: rotateX(var(--fa));
+    filter: drop-shadow(0 3px 3px rgba(15,36,53,.14)); will-change: transform; }
+  .env-flap path { fill: #EEF2F6; stroke: #C2CDD6; stroke-width: 1; vector-effect: non-scaling-stroke; transition: fill .15s; }
+  .env.flipped .env-flap { z-index: 1; filter: none; }
+  .env.flipped .env-flap path { fill: #C9D4DD; }
+  .env-seal { position: absolute; z-index: 6; left: 50%; top: 51%; width: 64px; height: 64px; margin: -32px 0 0 -32px; pointer-events: none; }
+  .env-seal .half { position: absolute; inset: 0; color: var(--amber); filter: drop-shadow(0 5px 6px rgba(180,58,24,.3));
+    transition: transform .55s cubic-bezier(.3,.7,.4,1), opacity .5s; transform: translateX(var(--sx, 0px)) rotate(var(--sr, 0deg)); }
+  .env-seal .half svg { width: 100%; height: 100%; display: block; }
+  .env-seal .l { clip-path: polygon(0 0, 53% 0, 46% 20%, 55% 38%, 44% 57%, 54% 76%, 47% 100%, 0 100%); --sx: calc(-1 * var(--strain, 0px)); --sr: calc(-1 * var(--strain-r, 0deg)); }
+  .env-seal .r { clip-path: polygon(53% 0, 100% 0, 100% 100%, 47% 100%, 54% 76%, 44% 57%, 55% 38%, 46% 20%); --sx: var(--strain, 0px); --sr: var(--strain-r, 0deg); }
+  .envelope.dragging .env-seal .half { transition: none; }
+  .env.cracked .env-seal .l { transform: translate(-46px, 90px) rotate(-48deg); opacity: 0; transition: transform .7s cubic-bezier(.3,.6,.5,1), opacity .6s .1s; }
+  .env.cracked .env-seal .r { transform: translate(52px, 100px) rotate(40deg); opacity: 0; transition: transform .7s cubic-bezier(.3,.6,.5,1), opacity .6s .1s; }
+  .env.idle .env-seal { animation: sealNudge 3.2s ease-in-out infinite 1s; }
+  @keyframes sealNudge { 0%, 70%, 100% { transform: none; } 76% { transform: rotate(-7deg) scale(1.06); } 82% { transform: rotate(6deg) scale(1.06); } 88% { transform: none; } }
+  .env.out .env-card { transition: transform .32s cubic-bezier(.5,0,.75,0), opacity .25s .08s; transform: translateY(calc(var(--cy) - 70px)) rotate(var(--cr)) scale(1.06); opacity: 0; }
+  .pull-hint { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 0 14px; font-stretch: 125%; font-weight: 700; font-size: 12.5px;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink); transition: opacity .2s; }
+  .pull-hint .chev { display: grid; justify-items: center; }
+  .pull-hint .chev svg { width: 22px; height: 12px; margin-top: -3px; stroke: var(--sky-deep); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; animation: chev 1.4s ease-in-out infinite; }
+  .pull-hint .chev svg:nth-child(1) { animation-delay: .3s; }
+  .pull-hint .chev svg:nth-child(2) { animation-delay: .15s; }
+  @keyframes chev { 0%, 100% { opacity: .15; transform: translateY(3px); } 40% { opacity: 1; transform: none; } }
+  .envelope.dragging .pull-hint, .envelope.opening .pull-hint { opacity: 0; }
 
   /* ===== CREDENCIAL ===== */
-  #s-secret.active { animation: breakSeal .75s var(--ease); }
-  @keyframes breakSeal { from { clip-path: circle(0% at 50% 58%); } to { clip-path: circle(150% at 50% 58%); } }
+  /* o cartão tirado do envelope desce e se desdobra na sua frente */
+  #s-secret.active .cred { transform-origin: 50% 0; animation: credIn .7s var(--ease) both; }
+  #s-secret.active .foot { animation: rise .4s var(--ease) .35s both; }
+  @keyframes credIn { from { transform: perspective(900px) translateY(-40px) rotateX(-70deg) scale(.9); opacity: 0; } 35% { opacity: 1; } }
   .cred { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; background: var(--sheet);
     box-shadow: 0 1px 2px rgba(15,36,53,.08), 0 18px 40px -22px rgba(15,36,53,.45); }
   .cred-band { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--sky); color: var(--ink); }
@@ -477,11 +510,6 @@
   .seen .av.done::after { content: ""; position: absolute; right: -4px; top: -4px; width: 14px; height: 14px; border-radius: 50%;
     background: var(--sky-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px no-repeat; }
   .seen .av.now { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--sky-deep); transform: translateY(-2px); }
-  .envelope { margin-top: 16px; }
-  .hold:not(.pressing) .seal { animation: breathe 2.6s ease-in-out infinite; }
-  @keyframes breathe { 50% { transform: scale(1.05); } }
-  .hold:not(.pressing) .ring .track { animation: track 2.6s ease-in-out infinite; }
-  @keyframes track { 50% { stroke: var(--sky); } }
 
   /* conferir a palavra */
   .peek { position: relative; display: block; width: 100%; margin-top: 26px; height: 92px; border-radius: 4px; overflow: hidden;
@@ -594,7 +622,7 @@
     .screen { min-height: min(calc(100dvh - 150px), 740px); }
     .dossier-wrap { padding-top: 28px; }
     .sticky-foot { background: linear-gradient(transparent, var(--sheet) 30%); margin: 0 -30px; padding: 16px 30px 0; }
-    .envelope, .cred { background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+    .cred { background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
     .file { background: var(--paper); }
     .screen.leaving, .screen.entering { background: var(--sheet); margin: 0 -30px; padding-left: 30px; padding-right: 30px; }
     .file[aria-pressed="true"] { background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--ink); }
@@ -696,7 +724,7 @@
     <h2>Como jogar</h2>
     <ol class="steps stagger">
       <li style="--i:1"><span>Escrevam o nome de todos os jogadores (<b>3 ou mais</b>).</span></li>
-      <li style="--i:2"><span>Passem o celular de mão em mão. Cada um <b>segura o selo</b> e vê seu segredo sem ninguém olhar.</span></li>
+      <li style="--i:2"><span>Passem o celular de mão em mão. Cada um <b>puxa o cartão do envelope</b> e vê seu segredo sem ninguém olhar.</span></li>
       <li style="--i:3"><span>Todos recebem a <b>mesma palavra</b>. Só o impostor não recebe.</span></li>
       <li style="--i:4"><span>Cada um diz <b>uma palavra de dica</b>. Se for óbvia demais, o impostor descobre.</span></li>
       <li style="--i:5"><span>O impostor disfarça e tenta adivinhar a palavra pelas dicas.</span></li>
@@ -821,14 +849,28 @@
     <p class="handoff-to">Entregue o celular para</p>
     <h2 class="handoff-name" id="pass-name"></h2>
     <div class="seen" id="seen" aria-label="Quem já viu o segredo"></div>
-    <div class="envelope" id="envelope">
-      <svg class="flap" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L50 46 L100 0"/></svg>
-      <div class="hold" id="hold">
-        <svg class="ring" viewBox="0 0 150 150" aria-hidden="true"><circle class="track" cx="75" cy="75" r="72"/><circle class="prog" id="hold-prog" cx="75" cy="75" r="72"/></svg>
-        <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><use href="#seal"/></svg>
+    <div class="envelope" id="envelope" role="button" aria-label="Envelope: puxe para cima para abrir">
+      <div class="pull-hint" aria-hidden="true">
+        <span class="chev"><svg viewBox="0 0 22 12"><path d="M2 10l9-8 9 8"/></svg><svg viewBox="0 0 22 12"><path d="M2 10l9-8 9 8"/></svg><svg viewBox="0 0 22 12"><path d="M2 10l9-8 9 8"/></svg></span>
+        <span id="pull-label">Puxe para cima</span>
       </div>
-      <div class="hold-label" id="hold-label">Segure o selo para ver</div>
-      <div class="stamp-line"><span class="code">Só para</span><span class="code"><b id="pass-name-small"></b></span></div>
+      <div class="env idle" id="env">
+        <div class="env-back"></div>
+        <div class="env-card" id="env-card" aria-hidden="true">
+          <div class="band"><span class="code">Confidencial</span><span class="code case-ref"></span></div>
+          <div class="lines"><i style="width:40%"></i><i class="dark"></i><i></i><i style="width:85%"></i><i style="width:60%"></i></div>
+        </div>
+        <svg class="env-front" viewBox="0 0 142 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 0 L66 48 Q71 52 76 48 L142 0 V100 H0 Z" fill="#E4EAEF"/>
+          <path d="M0 100 L62 54 Q71 48 80 54 L142 100 Z" fill="#F3F6F9" stroke="#C9D3DB" stroke-width="1" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <div class="env-to"><span class="code">Só para</span><b id="pass-name-small"></b></div>
+        <svg class="env-flap" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 H100 L54 96 Q50 102 46 96 Z"/></svg>
+        <div class="env-seal" aria-hidden="true">
+          <span class="half l"><svg viewBox="0 0 120 120"><use href="#seal"/></svg></span>
+          <span class="half r"><svg viewBox="0 0 120 120"><use href="#seal"/></svg></span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1075,7 +1117,7 @@ function go(id, dir = "fwd") {
   const root = document.documentElement, from = document.querySelector(".screen.active");
   root.dataset.dir = dir;
   current = id;
-  // a credencial tem sua própria abertura (o selo se rompe)
+  // a credencial tem sua própria entrada (o cartão sai do envelope)
   if (!from || reducedMotion || id === "s-secret") { show(id); return; }
   if (from.id === id) { show(id); replay($(id), "fresh"); return; }
   // congela a tela antiga onde ela está na janela, e a nova desliza por cima
@@ -1444,40 +1486,122 @@ function showPass() {
   $("pass-name-small").textContent = name;
   $("pass-step").textContent = pad2(r.idx + 1) + "/" + pad2(r.order.length);
   $("seen").innerHTML = r.order.map((p, i) => avatar(p, i < r.idx ? "done" : i === r.idx ? "now" : "")).join("");
-  resetHold();
+  resetPull();
   go("s-pass");
 }
 
-/* segurar o lacre */
-const HOLD_MS = 450, RING = 452.4;
-let holdStart = 0, holdRaf = 0;
-function resetHold() {
-  cancelAnimationFrame(holdRaf); holdStart = 0;
-  $("hold-prog").style.strokeDashoffset = RING;
-  $("hold").classList.remove("pressing");
-  $("hold-label").textContent = "Segure o selo para ver";
+/* ---------- abrir o envelope puxando para cima ----------
+   o dedo controla tudo: os primeiros 26px forçam o lacre até rachar,
+   até 96px a aba vira, e daí em diante o cartão sai junto com o dedo */
+const CRACK = 26, FLAP_END = 96;
+const pull = { y0: 0, x0: 0, dy: 0, dx: 0, id: null, anim: 0, opening: false, hist: [] };
+const env = $("envelope"), envEl = $("env");
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const riseMax = () => $("env-card").offsetHeight * 0.96;
+function renderPull(dy, dx = 0) {
+  pull.dy = dy;
+  const st = envEl.style;
+  // 1. o lacre fazendo força
+  const sp = clamp(dy / CRACK, 0, 1);
+  st.setProperty("--strain", (sp * 3).toFixed(2) + "px");
+  st.setProperty("--strain-r", (sp * 4).toFixed(2) + "deg");
+  if (dy >= CRACK && !envEl.classList.contains("cracked")) { envEl.classList.add("cracked"); vibrate(18); sfx("crack"); }
+  else if (dy < CRACK * 0.6 && envEl.classList.contains("cracked") && !pull.opening) envEl.classList.remove("cracked");
+  // 2. a aba vira para trás
+  const fp = clamp((dy - CRACK * 0.7) / (FLAP_END - CRACK * 0.7), 0, 1);
+  const ang = fp * 178;
+  st.setProperty("--fa", ang.toFixed(1) + "deg");
+  envEl.classList.toggle("flipped", ang > 90);
+  // 3. o cartão sobe com o dedo (com um pouco de resistência no fim)
+  const max = riseMax();
+  let c = Math.max(0, dy - FLAP_END);
+  if (c > max) c = max + (c - max) * 0.25;
+  st.setProperty("--cy", (-c).toFixed(1) + "px");
+  st.setProperty("--lift", Math.min(30, c / 4).toFixed(1) + "px");
+  st.setProperty("--cr", (clamp(dx, -120, 120) * 0.035 * Math.min(1, c / 60)).toFixed(2) + "deg");
+  envEl.classList.toggle("idle", dy === 0);
 }
-function holdTick(t) {
-  const p = Math.min(1, (t - holdStart) / HOLD_MS);
-  $("hold-prog").style.strokeDashoffset = RING * (1 - p);
-  if (p >= 1) { holdStart = 0; $("hold").classList.remove("pressing"); vibrate(30); showSecret(); return; }
-  holdRaf = requestAnimationFrame(holdTick);
+// anima o puxão até um valor (para voltar sozinho ou terminar de abrir)
+function animatePull(to, ms, done, ease = t => 1 - Math.pow(1 - t, 3)) {
+  cancelAnimationFrame(pull.anim);
+  const from = pull.dy, dx0 = pull.dx, t0 = performance.now();
+  const step = t => {
+    const k = Math.min(1, Math.max(0, (t - t0) / ms)), e = ease(k);
+    pull.dx = dx0 * (1 - e);
+    renderPull(from + (to - from) * e, pull.dx);
+    if (k < 1) pull.anim = requestAnimationFrame(step); else done && done();
+  };
+  pull.anim = requestAnimationFrame(step);
 }
-function holdDown(e) {
-  if (e.button > 0) return;
+function resetPull() {
+  cancelAnimationFrame(pull.anim);
+  pull.opening = false; pull.id = null; pull.dx = 0;
+  envEl.classList.remove("cracked", "flipped", "out");
+  env.classList.remove("dragging", "opening");
+  renderPull(0);
+  $("pull-label").textContent = "Puxe para cima";
+}
+function openEnvelope(fast) {
+  if (pull.opening) return;
+  pull.opening = true; env.classList.add("opening");
+  const full = FLAP_END + riseMax();
+  animatePull(full, fast ? 170 : 900, () => {
+    vibrate(30); sfx("whoosh");
+    envEl.classList.add("out");
+    setTimeout(showSecret, 230);
+  }, fast ? undefined : t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+}
+env.addEventListener("pointerdown", e => {
+  if (e.button > 0 || pull.opening || pull.id !== null) return;
   e.preventDefault();
-  holdStart = performance.now();
-  $("hold").classList.add("pressing");
-  $("hold-label").textContent = "Segurando...";
-  holdRaf = requestAnimationFrame(holdTick);
+  cancelAnimationFrame(pull.anim);
+  pull.id = e.pointerId;
+  try { env.setPointerCapture(e.pointerId); } catch (err) {}
+  pull.y0 = e.clientY + pull.dy; pull.x0 = e.clientX; pull.dx = 0;
+  pull.hist = [[performance.now(), pull.dy]];
+  env.classList.add("dragging"); tap();
+});
+env.addEventListener("pointermove", e => {
+  if (e.pointerId !== pull.id) return;
+  const dy = Math.max(0, pull.y0 - e.clientY);
+  pull.dx = e.clientX - pull.x0;
+  renderPull(dy, pull.dx);
+  const now = performance.now();
+  pull.hist.push([now, dy]); while (pull.hist.length > 2 && now - pull.hist[0][0] > 90) pull.hist.shift();
+});
+function endPull(e) {
+  if (e.pointerId !== pull.id) return;
+  pull.id = null; env.classList.remove("dragging");
+  const [t0, y0] = pull.hist[0], v = (pull.dy - y0) / Math.max(1, performance.now() - t0);  // px/ms para cima
+  const out = Math.max(0, pull.dy - FLAP_END) / riseMax();
+  if (out >= 0.6 || (out >= 0.2 && v > 0.5) || (pull.dy > CRACK && v > 1.2)) { openEnvelope(true); return; }
+  // só um toque: o envelope dá uma espiada para ensinar o gesto
+  if (pull.dy < 8) {
+    $("pull-label").textContent = "Arraste para cima";
+    animatePull(52, 260, () => animatePull(0, 420));
+    return;
+  }
+  animatePull(0, 420);
 }
-function holdUp() { if (holdStart) resetHold(); }
-const env = $("envelope");
-env.addEventListener("pointerdown", holdDown);
-["pointerup", "pointerleave", "pointercancel"].forEach(ev => env.addEventListener(ev, holdUp));
+env.addEventListener("pointerup", endPull);
+env.addEventListener("pointercancel", endPull);
 env.addEventListener("contextmenu", e => e.preventDefault());
-env.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") showSecret(); });
+env.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter" || e.key === "ArrowUp") { e.preventDefault(); openEnvelope(false); } });
 env.tabIndex = 0;
+
+// sons de papel feitos na hora (sem arquivos): estalo do lacre e o cartão saindo
+function sfx(kind) {
+  try {
+    const ctx = audioCtx; if (!ctx || ctx.state !== "running") return;
+    const crack = kind === "crack", dur = crack ? 0.09 : 0.28, n = Math.floor(ctx.sampleRate * dur);
+    const buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) { const k = i / n; d[i] = (Math.random() * 2 - 1) * (crack ? Math.pow(1 - k, 6) * (i % 97 < 8 ? 1 : .35) : Math.sin(Math.PI * k) * .6); }
+    const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    src.buffer = buf; f.type = crack ? "highpass" : "bandpass";
+    f.frequency.value = crack ? 1800 : 2600; f.Q.value = .7; g.gain.value = crack ? .5 : .22;
+    src.connect(f); f.connect(g); g.connect(ctx.destination); src.start();
+  } catch (e) {}
+}
 
 function showSecret() {
   const r = state.round, name = r.order[r.idx], isImp = r.impostors.includes(name);

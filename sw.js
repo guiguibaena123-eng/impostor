@@ -1,6 +1,6 @@
-// Guarda os arquivos do jogo no celular para ele abrir mesmo sem internet.
-// Ao mudar qualquer arquivo do jogo, aumente o número da versão abaixo.
-const CACHE = "impostor-v17";
+﻿// Guarda os arquivos do jogo no celular para ele abrir mesmo sem internet.
+// Ao mudar qualquer arquivo do jogo, aumente o nÃºmero da versÃ£o abaixo.
+const CACHE = "impostor-v18";
 const FILES = [
   "./",
   "./index.html",
@@ -28,7 +28,7 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Tenta a internet primeiro (pega atualizações); sem internet, usa a cópia guardada.
+// Tenta a internet primeiro (pega atualizaÃ§Ãµes); sem internet, usa a cÃ³pia guardada.
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   e.respondWith(
