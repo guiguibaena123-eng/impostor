@@ -443,11 +443,6 @@
 
   /* vez de falar */
   .first { gap: 10px; }
-  .spk-next { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: 4px;
-    background: var(--ink); color: var(--sheet); font-stretch: 112%; font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase;
-    transition: transform .15s var(--ease), background .2s; }
-  .spk-next .i { width: 18px; height: 18px; stroke-width: 2.2; }
-  .spk-next:active { transform: scale(.95); }
   .spk-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 2px; }
   .spk { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px 0 3px; border-radius: 4px;
     background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); font-size: 14px; font-weight: 600; color: var(--ink);
@@ -832,7 +827,6 @@
     <h2>Hora das dicas</h2>
     <div class="first">
       <span class="who" id="first-who"></span>
-      <button class="spk-next" id="spk-next" onclick="nextSpeaker()" aria-label="Já falou, passar a vez"><svg class="i"><use href="#i-check"/></svg>Falou</button>
     </div>
     <div class="spk-list" id="spk-list" aria-label="Ordem de quem fala"></div>
     <div class="clock" id="clock">
@@ -840,7 +834,7 @@
       <div class="track"><div class="fill" id="timer-fill"></div></div>
       <div class="status" id="timer-status" aria-live="polite"></div>
     </div>
-    <p class="talk-help" id="talk-help" aria-live="polite">Cada um diz uma palavra de dica. Toque em <b>Falou</b> para passar a vez.</p>
+    <p class="talk-help" id="talk-help" aria-live="polite">Cada um diz uma palavra de dica, na ordem da lista.</p>
     <div class="foot">
       <div class="row2">
         <button class="btn line" id="pause-btn" onclick="togglePause()"><svg class="i"><use href="#i-pause"/></svg> Pausar</button>
@@ -1545,7 +1539,7 @@ function startTalk() {
   const r = state.round, at = Math.max(0, state.players.indexOf(r.first));
   r.speak = { order: [...state.players.slice(at), ...state.players.slice(0, at)], idx: 0, lap: 1, done: [] };
   renderSpeakers();
-  $("talk-help").innerHTML = "Cada um diz uma palavra de dica. Toque em <b>Falou</b> para passar a vez.";
+  $("talk-help").innerHTML = "Cada um diz uma palavra de dica, na ordem da lista.";
   remaining = total = state.time; paused = false;
   setPauseBtn();
   renderTimer();
@@ -1576,14 +1570,6 @@ function renderSpeakers() {
     `<button class="spk ${sp.done.includes(p) ? "done" : ""} ${i === sp.idx ? "now" : ""}" onclick="setSpeaker(${i})" aria-label="${esc(p)}${sp.done.includes(p) ? ", já falou" : ""}">${avatar(p)}<span class="nm">${esc(p)}</span></button>`).join("");
   const v = document.querySelector("#first-who .v");
   if (v && v.clientWidth) fitName(v, 24, 13);
-}
-function nextSpeaker() {
-  const sp = state.round.speak, who = sp.order[sp.idx];
-  if (!sp.done.includes(who)) sp.done.push(who);
-  tap();
-  if (sp.done.length >= sp.order.length) { sp.lap++; sp.done = []; sp.idx = 0; $("talk-help").innerHTML = "Todos falaram. Mais uma volta de dicas, ou toquem em <b>Votar</b>."; }
-  else { let n = sp.idx; do { n = (n + 1) % sp.order.length; } while (sp.done.includes(sp.order[n])); sp.idx = n; }
-  renderSpeakers();
 }
 function setSpeaker(i) { state.round.speak.idx = i; tap(); renderSpeakers(); }
 function setPauseBtn() {
