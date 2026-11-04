@@ -367,6 +367,39 @@
   .ledger .pts { font-family: var(--mono); font-size: 18px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 
 
+
+  /* meta de pontos */
+  .goal-tag { margin-left: 8px; color: var(--sky-ink); }
+  .scoring .goal { background: var(--sky-wash); }
+  .scoring .goal b { color: var(--sky-ink); }
+  .ledger .nm { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .meter { display: block; height: 3px; border-radius: 2px; background: var(--rule-soft); overflow: hidden; }
+  @keyframes meter-in { from { transform: scaleX(0); } }
+  .meter i { animation: meter-in .8s var(--ease) .45s both; display: block; height: 100%; background: var(--sky-deep); transform-origin: left; transform: scaleX(var(--p, 0));
+    transition: transform .7s var(--ease) .45s; }
+  .lr.near .meter i { background: var(--amber); }
+  .lr.champ .meter i { background: var(--amber); }
+  .lr.champ .pts { color: var(--amber-deep); }
+
+  /* tela do campeão */
+  #s-win { position: relative; }
+  .win-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 0 6px; }
+  .stamp.win { color: var(--amber); font-size: clamp(30px, 10vw, 42px); }
+  .win-who { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 26px; width: 100%; }
+  .win-who .av { background: var(--amber); color: #fff; box-shadow: none; width: 64px; height: 64px; font-size: 22px; animation: rise .5s var(--ease) .35s both; }
+  .win-who .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .win-name { font-stretch: 125%; font-weight: 900; text-transform: uppercase; line-height: .98; letter-spacing: -.01em;
+    font-size: 48px; width: 100%; animation: rise .5s var(--ease) .45s both; overflow-wrap: normal; word-break: normal; }
+  .win-hero .lede { margin-top: 12px; text-align: center; animation: rise .5s var(--ease) .55s both; }
+  .shreds { position: absolute; inset: 0 calc(var(--pad) * -1); overflow: hidden; pointer-events: none; z-index: 5; }
+  .shreds i { position: absolute; top: -24px; width: 7px; height: 18px; border-radius: 1px; opacity: 0;
+    animation: shred var(--d, 2.6s) cubic-bezier(.3, .2, .5, 1) var(--w, 0s) forwards; }
+  @keyframes shred {
+    0% { opacity: 1; transform: translate(0, 0) rotate(var(--r0, 0deg)); }
+    85% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--x, 0px), 105vh) rotate(var(--r1, 360deg)); }
+  }
+
   /* painel de confirmação */
   .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; justify-items: center;
     background: rgba(15,36,53,.42); opacity: 0; visibility: hidden; transition: opacity .22s var(--ease), visibility 0s .22s; }
@@ -501,6 +534,7 @@
         <div><span>Grupo pegou o impostor</span><b>+1 cada</b></div>
         <div><span>Impostor pego, mas acertou a palavra</span><b>+2</b></div>
         <div><span>Impostor escapou da votação</span><b>+3</b></div>
+        <div class="goal"><span>Quem chegar a <b>10 pontos</b> primeiro vence a partida</span><b>10</b></div>
       </div>
     </div>
     <div class="foot">
@@ -691,13 +725,32 @@
       <div class="r" id="result-acc-row" hidden><span class="k">Acusado</span><span class="v" id="result-acc"></span></div>
     </div>
     <div class="field" style="margin-top:28px">
-      <div class="field-head"><span class="field-title">Placar</span><button class="code" onclick="resetScores()" style="padding:12px 0 12px 16px;margin:-12px 0">Zerar</button></div>
+      <div class="field-head"><span class="field-title">Placar <span class="code goal-tag">meta 10</span></span><button class="code" onclick="resetScores()" style="padding:12px 0 12px 16px;margin:-12px 0">Zerar</button></div>
       <div class="ledger" style="margin-top:0" id="scoreboard"></div>
     </div>
     <div class="foot">
-      <button class="btn" onclick="startRound()">Próxima rodada <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" id="next-btn" onclick="nextOrWin()">Próxima rodada <svg class="i"><use href="#i-arrow"/></svg></button>
       <button class="btn line" onclick="exitToSetup()">Mudar jogadores</button>
     </div>
+  </section>
+
+  <!-- CAMPEÃO -->
+  <section class="screen" id="s-win" aria-label="Campeão da partida">
+    <div class="bar"><span class="code">Partida encerrada</span><span class="code">Meta <b>10</b> pontos</span></div>
+    <div class="win-hero">
+      <div class="stamp win" id="win-stamp">Campeão</div>
+      <div class="win-who" id="win-who"></div>
+      <p class="lede" id="win-text"></p>
+    </div>
+    <div class="field">
+      <div class="field-head"><span class="field-title">Placar final</span></div>
+      <div class="ledger" style="margin-top:0" id="win-board"></div>
+    </div>
+    <div class="foot">
+      <button class="btn" onclick="newMatch(false)">Nova partida <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn line" onclick="newMatch(true)">Mudar jogadores</button>
+    </div>
+    <div class="shreds" id="shreds" aria-hidden="true"></div>
   </section>
 
 </div>
@@ -802,7 +855,7 @@ const caseLabel = () => "Nº " + String(state.caseNo).padStart(4, "0");
 const vibrate = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
 /* ---------- Navegação: desliza entre telas e respeita o botão voltar do celular ---------- */
-const ROUND_SCREENS = new Set(["s-pass", "s-secret", "s-talk", "s-vote", "s-guess", "s-result"]);
+const ROUND_SCREENS = new Set(["s-pass", "s-secret", "s-talk", "s-vote", "s-guess", "s-result", "s-win"]);
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let current = "s-home", leavingEl = null, enteringEl = null, navTimer = 0;
 function endNav() {
@@ -842,7 +895,7 @@ function go(id, dir = "fwd") {
 // Cada tela tem uma "tela anterior" fixa. O voltar do jogo e o do celular fazem a mesma coisa.
 const PARENT = { "s-rules": "s-home", "s-setup": "s-home", "s-files": "s-setup", "s-vote": "s-talk" };
 async function leaveRound() {
-  if (current !== "s-result" && !(await ask("Sair da rodada?", "O segredo desta rodada será descartado e ninguém ganha pontos.", "Sair da rodada", "Continuar jogando"))) return;
+  if (current !== "s-result" && current !== "s-win" && !(await ask("Sair da rodada?", "O segredo desta rodada será descartado e ninguém ganha pontos.", "Sair da rodada", "Continuar jogando"))) return;
   clearInterval(timerId); state.round = null; keepAwake(false);
   go("s-setup", "back");
 }
@@ -1049,6 +1102,7 @@ function drawWord() {
 }
 function startRound() {
   if (state.players.length < 3 || !state.cats.length) { go("s-setup"); return; }
+  if (champions().length) state.scores = {};  // alguém já venceu: começa uma partida nova
   const { cat, word } = drawWord();
   const impostors = shuffle(state.players).slice(0, Math.min(state.impostors, maxImpostors()));
   // quem começa nunca é impostor: ele seria o único sem pista nenhuma
@@ -1260,17 +1314,29 @@ function confirmVote() {
 }
 
 /* ---------- Veredito e placar ---------- */
+const GOAL = 10;
+// quem tem mais pontos entre os que chegaram à meta (empate divide o título)
+function champions() {
+  const live = state.players.map(p => [p, state.scores[p] || 0]).filter(([, s]) => s >= GOAL);
+  if (!live.length) return [];
+  const top = Math.max(...live.map(([, s]) => s));
+  return live.filter(([, s]) => s === top).map(([p]) => p);
+}
 function finish(outcome) {
   const r = state.round;
   const crew = state.players.filter(p => !r.impostors.includes(p));
   const deltas = {};
-  const add = (list, pts) => list.forEach(p => { state.scores[p] = (state.scores[p] || 0) + pts; deltas[p] = pts; });
+  // os pontos param na meta
+  const add = (list, pts) => list.forEach(p => {
+    const before = state.scores[p] || 0, after = Math.min(GOAL, before + pts);
+    state.scores[p] = after; deltas[p] = after - before;
+  });
   const plural = r.impostors.length > 1;
   const stamp = $("result-stamp");
   if (outcome === "caught") {
     add(crew, 1);
     stamp.textContent = "Caso resolvido"; stamp.className = "stamp";
-    $("result-text").textContent = plural ? "Os impostores foram pegos e não acertaram a palavra. Cada jogador do grupo ganha 1 ponto." : "O impostor foi pego e não acertou a palavra. Cada jogadore do grupo ganha 1 ponto.";
+    $("result-text").textContent = plural ? "Os impostores foram pegos e não acertaram a palavra. Cada jogador do grupo ganha 1 ponto." : "O impostor foi pego e não acertou a palavra. Cada jogador do grupo ganha 1 ponto.";
   } else if (outcome === "stolen") {
     add(r.impostors, 2);
     stamp.textContent = "Palavra roubada"; stamp.className = "stamp alarm";
@@ -1290,15 +1356,56 @@ function finish(outcome) {
   $("result-acc-row").hidden = outcome !== "wrong";
   if (outcome === "wrong") $("result-acc").textContent = r.innocent + " (era inocente)";
   renderScores(deltas, r.impostors);
+  const champs = champions(), next = $("next-btn");
+  next.firstChild.textContent = champs.length ? "Ver o campeão " : "Próxima rodada ";
+  next.classList.toggle("due", !!champs.length);
   save();
   go("s-result");
 }
-function renderScores(deltas = {}, imps = []) {
+const joinNames = l => l.length < 2 ? l.join("") : l.slice(0, -1).join(", ") + " e " + l[l.length - 1];
+function nextOrWin() { champions().length ? showWin() : startRound(); }
+function showWin() {
+  const champs = champions();
+  const multi = champs.length > 1;
+  $("win-stamp").textContent = multi ? "Empate" : "Campeão";
+  $("win-who").innerHTML = `<div class="row">${champs.map(p => avatar(p)).join("")}</div>` +
+    `<div class="win-name" id="win-name">${joinNames(champs.map(esc))}</div>`;
+  $("win-text").textContent = multi
+    ? `Chegaram a ${GOAL} pontos juntos e dividem o título.`
+    : `Chegou a ${GOAL} pontos primeiro e venceu a partida.`;
+  renderScores({}, [], "win-board");
+  const st = $("win-stamp"); st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
+  state.round = null; keepAwake(false);
+  go("s-win");
+  fitName($("win-name"), 56, 22);
+  throwShreds(); vibrate([40, 60, 40, 60, 120]);
+}
+// papel picado nas cores do dossiê
+function throwShreds() {
+  const box = $("shreds"); box.innerHTML = "";
+  if (reducedMotion) return;
+  const colors = ["var(--sky)", "var(--amber)", "var(--ink)", "var(--sky-deep)", "var(--paper-2)"];
+  let html = "";
+  for (let i = 0; i < 42; i++) {
+    const left = Math.random() * 100, x = (Math.random() - .5) * 140, d = 2.2 + Math.random() * 1.6, w = Math.random() * .9;
+    const r0 = Math.random() * 180, r1 = r0 + 360 + Math.random() * 540, h = 10 + Math.random() * 14;
+    html += `<i style="left:${left}%;height:${h}px;background:${colors[i % colors.length]};--x:${x}px;--d:${d}s;--w:${w}s;--r0:${r0}deg;--r1:${r1}deg"></i>`;
+  }
+  box.innerHTML = html;
+}
+function newMatch(changePlayers) {
+  state.scores = {}; save();
+  if (changePlayers) go("s-setup", "back"); else startRound();
+}
+function renderScores(deltas = {}, imps = [], target = "scoreboard") {
   const rows = state.players.map(p => [p, state.scores[p] || 0]).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const top = rows.length ? rows[0][1] : 0;
-  $("scoreboard").innerHTML = rows.map(([p, s], i) =>
-    `<div class="lr ${s > 0 && s === top ? "lead" : ""}" style="--i:${i}"><span class="pos">${pad2(i + 1)}</span>${avatar(p, "sm")}<span class="nm">${esc(p)}</span>
-      <span class="delta ${imps.includes(p) ? "amber" : ""}">${deltas[p] ? "+" + deltas[p] : ""}</span><span class="pts">${s}</span></div>`).join("");
+  $(target).innerHTML = rows.map(([p, s], i) => {
+    const cls = [s > 0 && s === top ? "lead" : "", s >= GOAL ? "champ" : s >= GOAL - 2 ? "near" : ""].join(" ");
+    return `<div class="lr ${cls}" style="--i:${i}"><span class="pos">${pad2(i + 1)}</span>${avatar(p, "sm")}
+      <span class="nm"><span>${esc(p)}</span><span class="meter" aria-hidden="true"><i style="--p:${Math.min(1, s / GOAL)}"></i></span></span>
+      <span class="delta ${imps.includes(p) ? "amber" : ""}">${deltas[p] ? "+" + deltas[p] : ""}</span><span class="pts" aria-label="${s} de ${GOAL} pontos">${s}</span></div>`;
+  }).join("");
 }
 async function resetScores() {
   if (!(await ask("Zerar o placar?", "Os pontos de todos os jogadores voltam para zero.", "Zerar placar", "Cancelar"))) return;

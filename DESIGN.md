@@ -353,6 +353,9 @@ A bottom sheet in place of the browser's confirm dialog. It has a navy 42% scrim
 ### Initials Badge
 A 38px square with a 4px radius and mono 600 initials (first and last word). There are three tones by player order: sky-wash/sky-ink, navy/sheet, and paper-2/navy with a hairline. Sizes are 46px (who starts) and 30px (scoreboard). The accused badge turns amber.
 
+### Match Goal and Champion
+The first to 10 points wins the match, and scores stop at 10. Each scoreboard row has a 3px progress meter: sky-deep normally, amber once a player is within 2 points or has won. The bar grows in over .8s. When someone reaches the goal, the result button becomes "Ver o campeão" with the sky pulse. The champion screen shows an amber "Campeão" stamp ("Empate" for a tie), a 64px amber initials badge, the name at expanded 900 fitted to the width, and the final scoreboard. 42 shreds in the palette colors fall once; with reduced motion, none fall.
+
 ### Rubber Stamp (signature)
 The verdict: expanded 900 uppercase at clamp(24px, 7.2vw, 32px) inside a 3px border, 6px radius, rotated -5deg. Sky-deep for a crew win, amber for alarm ("Pego!"). It lands by scaling down from 1.35 with a fade over .45s after .1s. A smaller rotated (-4deg) mono stamp tags accused suspects.
 
