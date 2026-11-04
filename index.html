@@ -146,13 +146,23 @@
   .line-item .label { flex: 1; font-size: 16px; }
   .line-item .label small { display: block; color: var(--ink-2); font-size: 13.5px; line-height: 1.35; }
 
-  /* agentes */
+
+  /* selo de iniciais */
+  .av { flex-shrink: 0; width: 38px; height: 38px; border-radius: 4px; display: grid; place-items: center;
+    font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: .02em; }
+  .av.sky { background: var(--sky-wash); color: var(--sky-ink); }
+  .av.ink { background: var(--ink); color: var(--sheet); }
+  .av.cloud { background: var(--paper-2); color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+  .av.lg { width: 46px; height: 46px; font-size: 16px; }
+  .av.sm { width: 30px; height: 30px; font-size: 12px; }
+  /* jogadores */
   .agent { display: flex; align-items: center; gap: 14px; min-height: 52px; border-bottom: 1px solid var(--rule-soft); }
   .agent { max-height: 90px; overflow: hidden; }
   .agent.new { animation: row-in .38s var(--ease); }
   .agent.gone { animation: row-out .26s var(--ease) forwards; pointer-events: none; }
   .agent .n { font-family: var(--mono); font-size: 12px; color: var(--ink-3); width: 22px; font-variant-numeric: tabular-nums; }
-  .agent .name { flex: 1; font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
+  .agent { min-height: 60px; }
+  .agent .name { flex: 1; font-size: 18px; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }
   .agent .rm { width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--ink-3); border-radius: 4px; }
   .agent .rm:active { color: var(--amber-deep); background: var(--amber-wash); }
   .add { display: flex; gap: 8px; margin-top: 12px; }
@@ -248,7 +258,7 @@
 
   /* ===== ENVELOPE (passar o celular) ===== */
   .handoff-to { color: var(--ink-2); font-size: 15px; margin: 4px 0 6px; }
-  .handoff-name { font-size: clamp(38px, 12vw, 56px); font-weight: 900; overflow-wrap: anywhere; }
+  .handoff-name { font-size: 48px; font-weight: 900; line-height: .98; overflow-wrap: normal; word-break: normal; hyphens: none; }
   .envelope { position: relative; flex: 1; min-height: 300px; margin-top: 22px; border-radius: 4px; background: var(--sheet);
     box-shadow: 0 1px 2px rgba(15,36,53,.08), 0 18px 40px -22px rgba(15,36,53,.45); overflow: hidden;
     display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -289,7 +299,8 @@
   /* ===== CONVERSA ===== */
   .first { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 14px 0; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
   .first .k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-  .first .v { font-stretch: 125%; font-size: 22px; font-weight: 800; text-transform: uppercase; overflow-wrap: anywhere; }
+  .first .v { font-stretch: 112%; font-size: 24px; font-weight: 800; line-height: 1.1; overflow-wrap: break-word; }
+  .first .who { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
   .clock { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 240px; }
   .clock .t { font-stretch: 125%; font-weight: 800; font-size: clamp(84px, 30vw, 132px); line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; transition: color .3s; }
   .clock.low .t { color: var(--amber); }
@@ -300,17 +311,19 @@
   .talk-help { font-size: 15px; color: var(--ink-2); text-align: center; max-width: 32ch; margin: 0 auto; text-wrap: balance; }
 
   /* ===== VOTAÇÃO ===== */
-  .suspects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
-  .suspect { position: relative; min-height: 76px; padding: 12px 14px; border-radius: 4px; text-align: left;
-    background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; overflow: hidden;
+  .suspects { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 20px; }
+  .suspect { position: relative; min-height: 64px; padding: 10px 14px; border-radius: 4px; text-align: left;
+    background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); display: flex; align-items: center; gap: 14px; overflow: hidden;
     transition: box-shadow .2s, background .2s; }
   .suspect .n { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
-  .suspect .name { font-size: 17px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+  .suspect .name { flex: 1; font-size: 20px; font-weight: 600; line-height: 1.2; overflow-wrap: break-word; }
   .suspect[aria-pressed="true"] { box-shadow: inset 0 0 0 2.5px var(--amber); background: var(--amber-wash); }
   .suspect[aria-pressed="true"] .n { color: var(--amber-deep); }
   .suspect.caught { background: var(--paper-2); box-shadow: none; color: var(--ink-3); pointer-events: none; }
+  .suspect.caught .av { opacity: .45; }
+  .suspect[aria-pressed="true"] .av { background: var(--amber); color: #fff; box-shadow: none; }
   .suspect.caught .name { text-decoration: line-through; text-decoration-thickness: 2px; }
-  .suspect .tag { position: absolute; right: 10px; top: 10px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+  .suspect .tag { position: static; flex-shrink: 0; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
     color: var(--amber-deep); box-shadow: inset 0 0 0 1.5px currentColor; padding: 2px 6px; border-radius: 2px; transform: rotate(-4deg); animation: stamp-in .3s var(--ease) both; }
   .notice { margin-top: 18px; padding: 14px 16px; border-radius: 4px; background: var(--amber-wash); color: var(--amber-deep); font-size: 15px; display: none; }
   .notice.on { display: block; animation: enter .35s var(--ease); }
@@ -331,10 +344,10 @@
   .record .v.word { font-stretch: 125%; font-size: 22px; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
   .record .v.amber { color: var(--amber-deep); }
   .ledger { margin-top: 26px; }
-  .ledger .lr { display: grid; grid-template-columns: 28px 1fr auto 44px; gap: 10px; align-items: center; min-height: 46px; border-bottom: 1px solid var(--rule-soft); }
+  .ledger .lr { display: grid; grid-template-columns: 22px 30px 1fr auto 40px; gap: 10px; align-items: center; min-height: 52px; border-bottom: 1px solid var(--rule-soft); }
   .ledger .lr { animation: row-in .4s var(--ease) both; animation-delay: calc(.35s + var(--i, 0) * 60ms); }
   .ledger .pos { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
-  .ledger .nm { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+  .ledger .nm { font-size: 17px; font-weight: 500; overflow-wrap: break-word; }
   .ledger .lr.lead .nm { font-weight: 700; }
   .ledger .lr.lead .pos { color: var(--sky-ink); font-weight: 600; }
   .ledger .delta { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--sky-ink); text-align: right; }
@@ -555,7 +568,7 @@
     </div>
     <div class="progress" aria-label="Etapa 2 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg now"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <h2>Hora das dicas</h2>
-    <div class="first"><span class="k">Começa</span><span class="v" id="first-name"></span></div>
+    <div class="first"><span class="k">Começa</span><span class="who" id="first-who"></span></div>
     <div class="clock" id="clock">
       <div class="t" id="timer">3:00</div>
       <div class="track"><div class="fill" id="timer-fill"></div></div>
@@ -574,7 +587,7 @@
   <!-- VOTAÇÃO -->
   <section class="screen" id="s-vote" aria-label="Votação">
     <div class="bar">
-      <button class="back" onclick="go('s-talk', 'back')" aria-label="Voltar para as dicas"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="back" onclick="goBack()" aria-label="Voltar para as dicas"><svg class="i"><use href="#i-back"/></svg></button>
       <span class="code case-ref"></span>
     </div>
     <div class="progress" aria-label="Etapa 3 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg done"><i></i>Dicas</span><span class="seg now"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
@@ -726,15 +739,11 @@ function show(id) {
   if (id === "s-home") renderHome();
   document.querySelectorAll(".case-ref").forEach(el => el.textContent = "Caso " + caseLabel());
   fitLines($(id));
+  if (id === "s-pass") fitName($("pass-name"));
 }
-function go(id, dir = "fwd", fromHistory = false) {
+function go(id, dir = "fwd") {
   const root = document.documentElement;
   root.dataset.dir = dir;
-  // dentro da rodada a história é substituída, para o "voltar" não reabrir segredos
-  if (!fromHistory) {
-    if (ROUND_SCREENS.has(id) && ROUND_SCREENS.has(current)) history.replaceState({ id }, "");
-    else if (id !== current) history.pushState({ id }, "");
-  }
   current = id;
   // a credencial tem sua própria abertura (o selo se rompe)
   if (activeVT) activeVT.skipTransition();
@@ -745,19 +754,49 @@ function go(id, dir = "fwd", fromHistory = false) {
     t.finished.catch(() => {}).finally(() => { if (activeVT === t) { activeVT = null; root.classList.remove("vt"); } });
   } else show(id);
 }
-function goBack() { history.state && history.state.id !== "s-home" ? history.back() : go("s-home", "back"); }
+// Cada tela tem uma "tela anterior" fixa. O voltar do jogo e o do celular fazem a mesma coisa.
+const PARENT = { "s-rules": "s-home", "s-setup": "s-home", "s-files": "s-setup", "s-vote": "s-talk" };
+function leaveRound() {
+  if (current !== "s-result" && !confirm("Sair da rodada? O segredo desta rodada será descartado.")) return;
+  clearInterval(timerId); state.round = null;
+  go("s-setup", "back");
+}
+function goBack() {
+  if (current === "s-home") return;
+  if (PARENT[current]) go(PARENT[current], "back");
+  else if (ROUND_SCREENS.has(current)) leaveRound();
+  else go("s-home", "back");
+}
 function exitToSetup() { state.round = null; go("s-setup", "back"); }
-addEventListener("popstate", e => {
-  const target = (e.state && e.state.id) || "s-home";
-  if (state.round && ROUND_SCREENS.has(current) && current !== "s-result") {
-    if (!confirm("Sair da rodada? O segredo desta rodada será descartado.")) { history.pushState({ id: current }, ""); return; }
-    clearInterval(timerId); state.round = null;
-  }
-  if (current === "s-result") state.round = null;
-  go(ROUND_SCREENS.has(target) ? "s-setup" : target, "back", true);
+// o botão voltar do celular cai numa entrada "trava"; o jogo trata e arma de novo
+history.replaceState({ base: true }, "");
+history.pushState({ app: true }, "");
+addEventListener("popstate", () => {
+  if (current === "s-home") { history.back(); return; }  // na capa, voltar sai do jogo
+  goBack();
+  history.pushState({ app: true }, "");
 });
-history.replaceState({ id: "s-home" }, "");
 const tap = () => vibrate(8);
+const AV_TONES = ["sky", "ink", "cloud"];
+function initials(name) {
+  const w = name.trim().split(/\s+/);
+  return ((w[0][0] || "") + (w.length > 1 ? w[w.length - 1][0] : (w[0][1] || ""))).toUpperCase();
+}
+function avatar(name, cls = "") {
+  const i = Math.max(0, state.players.indexOf(name));
+  return `<span class="av ${AV_TONES[i % 3]} ${cls}" aria-hidden="true">${esc(initials(name))}</span>`;
+}
+// nome grande: quebra só entre palavras e diminui até a palavra mais longa caber
+function fitName(el, max = 64, min = 28) {
+  const w = el.clientWidth;
+  let lo = min, hi = max;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    el.style.fontSize = mid + "px";
+    (longestWordFits(el, w) && el.scrollHeight <= mid * 2.1) ? (lo = mid) : (hi = mid);
+  }
+  el.style.fontSize = lo + "px";
+}
 
 /* ---------- Capa ---------- */
 function renderHome() {
@@ -770,7 +809,7 @@ function renderSetup(fresh = -1) {
   const n = state.players.length;
   $("player-count").textContent = n;
   $("player-list").innerHTML = n
-    ? state.players.map((p, i) => `<div class="agent${i === fresh ? " new" : ""}"><span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>
+    ? state.players.map((p, i) => `<div class="agent${i === fresh ? " new" : ""}">${avatar(p)}<span class="name">${esc(p)}</span>
         <button class="rm" onclick="removePlayer(${i})" aria-label="Remover ${esc(p)}"><svg class="i"><use href="#i-x"/></svg></button></div>`).join("")
     : `<p class="empty-note">Ainda sem jogadores. Escreva o primeiro nome abaixo.</p>`;
 
@@ -884,15 +923,11 @@ function startRound() {
   save();
   showPass();
 }
-function abortRound() {
-  if (!confirm("Sair da rodada? O segredo desta rodada será descartado.")) return;
-  clearInterval(timerId);
-  state.round = null;
-  go("s-setup", "back");
-}
+function abortRound() { leaveRound(); }
 function showPass() {
   const r = state.round, name = r.order[r.idx];
   $("pass-name").textContent = name;
+  requestAnimationFrame(() => fitName($("pass-name")));
   $("pass-name-small").textContent = name;
   $("pass-step").textContent = pad2(r.idx + 1) + "/" + pad2(r.order.length);
   resetHold();
@@ -996,7 +1031,7 @@ function hideSecret() {
 /* ---------- Pistas e cronômetro ---------- */
 let timerId = null, remaining = 0, total = 0, paused = false;
 function startTalk() {
-  $("first-name").textContent = state.round.first;
+  $("first-who").innerHTML = avatar(state.round.first, "lg") + `<span class="v">${esc(state.round.first)}</span>`;
   remaining = total = state.time; paused = false;
   setPauseBtn();
   renderTimer();
@@ -1051,7 +1086,7 @@ function renderVote(enter = false) {
   $("vote-list").innerHTML = state.players.map((p, i) => {
     const caught = r.out.includes(p), sel = r.selected === p;
     return `<button class="suspect ${caught ? "caught" : ""}" style="--i:${i}" aria-pressed="${sel}" onclick="selectVote(${i})" ${caught ? 'aria-disabled="true"' : ""}>
-      <span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>${caught ? '<span class="tag">Detido</span>' : sel ? '<span class="tag">Acusado</span>' : ""}</button>`;
+      ${avatar(p)}<span class="name">${esc(p)}</span>${caught ? '<span class="tag">Detido</span>' : sel ? '<span class="tag">Acusado</span>' : ""}</button>`;
   }).join("");
   const btn = $("vote-btn");
   btn.disabled = !r.selected;
@@ -1122,7 +1157,7 @@ function renderScores(deltas = {}, imps = []) {
   const rows = state.players.map(p => [p, state.scores[p] || 0]).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const top = rows.length ? rows[0][1] : 0;
   $("scoreboard").innerHTML = rows.map(([p, s], i) =>
-    `<div class="lr ${s > 0 && s === top ? "lead" : ""}" style="--i:${i}"><span class="pos">${pad2(i + 1)}</span><span class="nm">${esc(p)}</span>
+    `<div class="lr ${s > 0 && s === top ? "lead" : ""}" style="--i:${i}"><span class="pos">${pad2(i + 1)}</span>${avatar(p, "sm")}<span class="nm">${esc(p)}</span>
       <span class="delta ${imps.includes(p) ? "amber" : ""}">${deltas[p] ? "+" + deltas[p] : ""}</span><span class="pts">${s}</span></div>`).join("");
 }
 function resetScores() {
