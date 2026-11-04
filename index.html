@@ -146,7 +146,8 @@
   .btn.quiet { min-height: 48px; background: transparent; color: var(--ink-2); justify-content: center; font-size: 13px; }
   .btn .i { width: 20px; height: 20px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .row2 .btn { justify-content: center; padding: 0 12px; font-size: 13.5px; white-space: nowrap; }
+  .row2 .btn { justify-content: center; min-width: 0; padding: 0 10px; font-size: clamp(12px, 3.5vw, 13.5px); letter-spacing: .03em; white-space: nowrap; }
+  .row2:has(> .btn[hidden]) { grid-template-columns: 1fr; }
 
   /* blocos de ficha */
   .field { border-top: 1.5px solid var(--ink); padding: 14px 0 6px; margin-top: 26px; }
@@ -203,7 +204,7 @@
   /* linha que abre os arquivos */
   .files-link { width: 100%; text-align: left; display: flex; align-items: center; gap: 14px; padding: 14px 0; }
   .files-link .label { flex: 1; }
-  .glyph-strip { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .glyph-strip { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: nowrap; overflow: hidden; }
   .glyph-strip .i { width: 18px; height: 18px; color: var(--ink-2); }
 
   /* ===== ARQUIVOS (categorias) ===== */
@@ -211,7 +212,7 @@
     border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
   .tally .big { font-family: var(--mono); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .tally .big span { color: var(--ink-3); font-weight: 400; }
-  .chips { display: flex; gap: 8px; margin: 14px 0 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 16px; }
   .chip { height: 38px; padding: 0 14px; border-radius: 2px; box-shadow: inset 0 0 0 1.5px var(--rule);
     font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
   .chip:active { background: var(--paper-2); transform: scale(.96); }
@@ -365,10 +366,59 @@
   .ledger .delta.amber { color: var(--amber-deep); }
   .ledger .pts { font-family: var(--mono); font-size: 18px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
 
+
+  /* painel de confirmação */
+  .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; justify-items: center;
+    background: rgba(15,36,53,.42); opacity: 0; visibility: hidden; transition: opacity .22s var(--ease), visibility 0s .22s; }
+  .sheet-wrap.on { opacity: 1; visibility: visible; transition: opacity .22s var(--ease); }
+  .sheet { width: 100%; max-width: 460px; background: var(--sheet); border-radius: 8px 8px 0 0;
+    padding: 24px var(--pad) calc(20px + env(safe-area-inset-bottom)); transform: translateY(32px);
+    transition: transform .32s var(--ease); box-shadow: 0 -12px 40px -24px rgba(15,36,53,.6); }
+  .sheet::before { content: ""; display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--rule); margin: -10px auto 18px; }
+  .sheet-wrap.on .sheet { transform: none; }
+  .sheet h3 { font-stretch: 125%; text-transform: uppercase; font-size: 24px; font-weight: 800; line-height: 1; margin: 0 0 10px; }
+  .sheet p { margin: 0 0 22px; color: var(--ink-2); font-size: 16px; }
+  .sheet-btns { display: grid; gap: 10px; }
+  .sheet-btns .btn { justify-content: center; }
+
+  /* aviso de nome repetido */
+  .field-msg { margin: 8px 0 0; font-size: 14px; color: var(--amber-deep); min-height: 0; }
+  .field-msg:empty { display: none; }
+  .add input.shake { animation: shake .36s var(--ease); border-color: var(--amber); }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  /* fim do tempo: o botão de votar chama atenção */
+  .btn.due { animation: due 1.6s ease-out infinite; }
+  @keyframes due { 0% { box-shadow: 0 0 0 0 rgba(31,132,198,.55); } 70%, 100% { box-shadow: 0 0 0 12px rgba(31,132,198,0); } }
+
+  /* mouse no PC */
+  @media (hover: hover) {
+    .btn:hover:not(:disabled) { background: #1C3A52; }
+    .btn.line:hover:not(:disabled) { background: rgba(15,36,53,.06); }
+    .btn.alarm:hover:not(:disabled) { background: var(--amber-deep); }
+    .chip:hover, .back:hover, .agent .rm:hover, .stepper button:hover:not(:disabled) { background: var(--paper-2); }
+    .suspect:hover:not([aria-pressed="true"]) { box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+    .file:hover:not([aria-pressed="true"]) { background: #D8E0E7; }
+    .files-link:hover .field-title { text-decoration: underline; text-underline-offset: 4px; }
+  }
+
+  /* celulares baixos (ex.: iPhone SE): a capa cabe inteira sem rolar */
+  @media (max-height: 640px) {
+    .seal-wrap { min-height: 120px; }
+    .seal-wrap .seal { width: 104px; height: 104px; }
+    .cover-line { font-size: 17px; }
+    .cover-rule { margin: 14px 0 10px; }
+    .foot { padding-top: 16px; }
+    .btn { min-height: 54px; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   }
   @media (min-width: 520px) {
+    .sheet-wrap { align-items: center; }
+    .sheet { border-radius: 8px; max-width: 420px; padding-bottom: 22px; }
+    .sheet::before { display: none; }
     body { align-items: center; padding: 28px 0; }
     #app { min-height: 0; margin: auto 0; padding: 30px; border-radius: 4px; background: var(--sheet);
       box-shadow: 0 0 0 1px var(--rule), 0 1px 2px rgba(15,36,53,.08), 0 30px 60px -30px rgba(15,36,53,.45); }
@@ -473,9 +523,10 @@
       </div>
       <div id="player-list"></div>
       <form class="add" onsubmit="addPlayer(event)">
-        <input id="player-input" maxlength="16" placeholder="Nome do jogador" autocomplete="off" enterkeyhint="done" aria-label="Nome do jogador">
+        <input id="player-input" maxlength="16" placeholder="Nome do jogador" autocomplete="off" enterkeyhint="next" aria-label="Nome do jogador" aria-describedby="player-msg">
         <button type="submit" aria-label="Adicionar jogador"><svg class="i"><use href="#i-plus"/></svg></button>
       </form>
+      <p class="field-msg" id="player-msg" aria-live="polite"></p>
     </div>
 
     <div class="field">
@@ -491,9 +542,9 @@
       <div class="line-item">
         <span class="label">Tempo de conversa<small>Para dar dicas e discutir</small></span>
         <div class="stepper">
-          <button onclick="changeTime(-30)" aria-label="Menos tempo"><svg class="i"><use href="#i-minus"/></svg></button>
+          <button id="time-minus" onclick="changeTime(-30)" aria-label="Menos tempo"><svg class="i"><use href="#i-minus"/></svg></button>
           <output id="time-label">3:00</output>
-          <button onclick="changeTime(30)" aria-label="Mais tempo"><svg class="i"><use href="#i-plus"/></svg></button>
+          <button id="time-plus" onclick="changeTime(30)" aria-label="Mais tempo"><svg class="i"><use href="#i-plus"/></svg></button>
         </div>
       </div>
       <div class="line-item" style="cursor:pointer" onclick="toggleHint()">
@@ -584,7 +635,7 @@
     <div class="clock" id="clock">
       <div class="t" id="timer">3:00</div>
       <div class="track"><div class="fill" id="timer-fill"></div></div>
-      <div class="status" id="timer-status"></div>
+      <div class="status" id="timer-status" aria-live="polite"></div>
     </div>
     <p class="talk-help">Cada um diz uma palavra de dica, na ordem da roda. Depois, conversem.</p>
     <div class="foot">
@@ -592,7 +643,7 @@
         <button class="btn line" id="pause-btn" onclick="togglePause()"><svg class="i"><use href="#i-pause"/></svg> Pausar</button>
         <button class="btn line" onclick="addTime()"><svg class="i"><use href="#i-plus"/></svg> 30 s</button>
       </div>
-      <button class="btn" onclick="goVote()">Votar <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" id="vote-go" onclick="goVote()">Votar <svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
   </section>
 
@@ -605,7 +656,7 @@
     <div class="progress" aria-label="Etapa 3 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg done"><i></i>Dicas</span><span class="seg now"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <h2>Quem é o impostor?</h2>
     <p class="lede">Votem em voz alta e toquem no mais votado.</p>
-    <div class="notice" id="vote-notice"></div>
+    <div class="notice" id="vote-notice" aria-live="polite"></div>
     <div class="suspects" id="vote-list"></div>
     <div class="foot">
       <button class="btn alarm" id="vote-btn" onclick="confirmVote()" disabled>Acusar <svg class="i"><use href="#i-arrow"/></svg></button>
@@ -637,9 +688,10 @@
       <div class="r"><span class="k">Palavra</span><span class="v word" id="result-word"></span></div>
       <div class="r"><span class="k">Categoria</span><span class="v" id="result-cat"></span></div>
       <div class="r"><span class="k" id="result-imp-k">Impostor</span><span class="v amber" id="result-impostors"></span></div>
+      <div class="r" id="result-acc-row" hidden><span class="k">Acusado</span><span class="v" id="result-acc"></span></div>
     </div>
     <div class="field" style="margin-top:28px">
-      <div class="field-head"><span class="field-title">Placar</span><button class="code" onclick="resetScores()" style="padding:6px 0">Zerar</button></div>
+      <div class="field-head"><span class="field-title">Placar</span><button class="code" onclick="resetScores()" style="padding:12px 0 12px 16px;margin:-12px 0">Zerar</button></div>
       <div class="ledger" style="margin-top:0" id="scoreboard"></div>
     </div>
     <div class="foot">
@@ -648,6 +700,17 @@
     </div>
   </section>
 
+</div>
+
+<div class="sheet-wrap" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+  <div class="sheet">
+    <h3 id="sheet-title"></h3>
+    <p id="sheet-text"></p>
+    <div class="sheet-btns">
+      <button class="btn alarm" id="sheet-yes"></button>
+      <button class="btn line" id="sheet-no"></button>
+    </div>
+  </div>
 </div>
 
 <!-- lacre: borda serrilhada + fechadura -->
@@ -778,9 +841,9 @@ function go(id, dir = "fwd") {
 }
 // Cada tela tem uma "tela anterior" fixa. O voltar do jogo e o do celular fazem a mesma coisa.
 const PARENT = { "s-rules": "s-home", "s-setup": "s-home", "s-files": "s-setup", "s-vote": "s-talk" };
-function leaveRound() {
-  if (current !== "s-result" && !confirm("Sair da rodada? O segredo desta rodada será descartado.")) return;
-  clearInterval(timerId); state.round = null;
+async function leaveRound() {
+  if (current !== "s-result" && !(await ask("Sair da rodada?", "O segredo desta rodada será descartado e ninguém ganha pontos.", "Sair da rodada", "Continuar jogando"))) return;
+  clearInterval(timerId); state.round = null; keepAwake(false);
   go("s-setup", "back");
 }
 function goBack() {
@@ -789,15 +852,52 @@ function goBack() {
   else if (ROUND_SCREENS.has(current)) leaveRound();
   else go("s-home", "back");
 }
-function exitToSetup() { state.round = null; go("s-setup", "back"); }
+function exitToSetup() { state.round = null; keepAwake(false); go("s-setup", "back"); }
 // o botão voltar do celular cai numa entrada "trava"; o jogo trata e arma de novo
 history.replaceState({ base: true }, "");
 history.pushState({ app: true }, "");
 addEventListener("popstate", () => {
+  if (sheetResolve) { closeSheet(false); history.pushState({ app: true }, ""); return; }  // voltar fecha o painel
   if (current === "s-home") { history.back(); return; }  // na capa, voltar sai do jogo
   goBack();
   history.pushState({ app: true }, "");
 });
+
+/* painel de confirmação no visual do jogo */
+let sheetResolve = null;
+function ask(title, text, yes, no) {
+  if (sheetResolve) closeSheet(false);
+  $("sheet-title").textContent = title; $("sheet-text").textContent = text;
+  $("sheet-yes").textContent = yes; $("sheet-no").textContent = no;
+  $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false"); tap();
+  setTimeout(() => $("sheet-no").focus({ preventScroll: true }), 60);
+  return new Promise(r => sheetResolve = r);
+}
+function closeSheet(v) {
+  if (!sheetResolve) return;
+  $("sheet").classList.remove("on"); $("sheet").setAttribute("aria-hidden", "true");
+  const r = sheetResolve; sheetResolve = null; r(v);
+}
+$("sheet-yes").addEventListener("click", () => closeSheet(true));
+$("sheet-no").addEventListener("click", () => closeSheet(false));
+$("sheet").addEventListener("click", e => { if (e.target.id === "sheet") closeSheet(false); });
+addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(false); });
+
+/* tela acesa durante a rodada */
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && "wakeLock" in navigator) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); }
+    if (!on && wakeLock) { const w = wakeLock; wakeLock = null; await w.release(); }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && state.round) keepAwake(true); });
+
+/* o som só pode tocar depois de um toque (iPhone): destrava no primeiro toque */
+let audioCtx = null;
+addEventListener("pointerdown", () => {
+  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); } catch (e) {}
+}, { passive: true });
 const tap = () => vibrate(8);
 const AV_TONES = ["sky", "ink", "cloud"];
 function initials(name) {
@@ -809,8 +909,12 @@ function avatar(name, cls = "") {
   return `<span class="av ${AV_TONES[i % 3]} ${cls}" aria-hidden="true">${esc(initials(name))}</span>`;
 }
 // nome grande: quebra só entre palavras e diminui até a palavra mais longa caber
-function fitName(el, max = 64, min = 28) {
+function fitName(el, max = 64, min = 20) {
   const w = el.clientWidth;
+  // nome muito comprido sem espaço: usa a letra normal (não a larga) para caber grande
+  el.style.fontStretch = "";
+  el.style.fontSize = "26px";
+  if (!longestWordFits(el, w)) el.style.fontStretch = "100%";
   let lo = min, hi = max;
   while (hi - lo > 1) {
     const mid = (lo + hi) >> 1;
@@ -841,11 +945,15 @@ function renderSetup(fresh = -1) {
   $("imp-plus").disabled = state.impostors >= maxImpostors();
   $("imp-help").textContent = n < 3 ? "Precisa de 3 jogadores ou mais" : `Até ${maxImpostors()} com essa turma`;
   $("time-label").textContent = fmt(state.time);
+  $("time-minus").disabled = state.time <= 30;
+  $("time-plus").disabled = state.time >= 600;
   $("hint-switch").setAttribute("aria-checked", state.hint);
 
   const words = state.cats.reduce((t, id) => t + CAT_BY_ID[id].words.length, 0);
   $("files-summary").innerHTML = `<b>${state.cats.length}</b> de ${CATEGORIES.length} ligadas · ${num(words)} palavras`;
-  $("glyph-strip").innerHTML = state.cats.slice(0, 12).map(id => glyph(id)).join("") + (state.cats.length > 12 ? `<span class="code">+${state.cats.length - 12}</span>` : "");
+  const strip = $("glyph-strip"), room = Math.max(4, Math.floor(((strip.clientWidth || 260) - 34) / 24));
+  const shown = state.cats.length > room ? room : state.cats.length;
+  strip.innerHTML = state.cats.slice(0, shown).map(id => glyph(id)).join("") + (state.cats.length > shown ? `<span class="code">+${state.cats.length - shown}</span>` : "");
 
   const btn = $("start-btn");
   btn.disabled = n < 3 || !state.cats.length;
@@ -855,7 +963,12 @@ function addPlayer(e) {
   e.preventDefault();
   const input = $("player-input"), name = input.value.trim().replace(/\s+/g, " ");
   if (!name) return;
-  if (state.players.some(p => p.toLowerCase() === name.toLowerCase())) { input.select(); return; }
+  if (state.players.some(p => p.toLowerCase() === name.toLowerCase())) {
+    $("player-msg").textContent = `${name} já está na lista. Use um apelido ou sobrenome.`;
+    input.classList.remove("shake"); void input.offsetWidth; input.classList.add("shake"); input.select(); vibrate([20, 40, 20]);
+    return;
+  }
+  $("player-msg").textContent = "";
   state.players.push(name); input.value = "";
   tap(); save(); renderSetup(state.players.length - 1); input.focus();
 }
@@ -941,6 +1054,7 @@ function startRound() {
   // quem começa nunca é impostor: ele seria o único sem pista nenhuma
   const crew = state.players.filter(p => !impostors.includes(p));
   state.caseNo++;
+  keepAwake(true);
   state.round = { cat, word, impostors, order: shuffle(state.players), idx: 0, first: pick(crew), out: [], selected: null };
   save();
   showPass();
@@ -1013,7 +1127,7 @@ function showSecret() {
 // ajusta a palavra para ocupar a largura do cartão sem quebrar no meio
 function fitWord(el) {
   const box = el.parentElement, maxW = box.clientWidth, maxH = Math.max(120, box.clientHeight - 40);
-  let lo = 26, hi = 112;
+  let lo = 18, hi = 112;
   while (hi - lo > 1) {
     const mid = (lo + hi) >> 1;
     el.style.fontSize = mid + "px";
@@ -1066,6 +1180,7 @@ function runTimer() {
     if (paused || remaining <= 0) return;
     remaining--; renderTimer();
     if (remaining === 0) { beep(); vibrate([250, 120, 250]); }
+    else if (remaining <= 3) vibrate(25);
   }, 1000);
 }
 function renderTimer() {
@@ -1073,6 +1188,7 @@ function renderTimer() {
   $("timer-fill").style.transform = `scaleX(${Math.max(0, remaining) / Math.max(1, total)})`;
   $("clock").classList.toggle("low", remaining <= 10);
   $("timer-status").textContent = remaining <= 0 ? "Tempo esgotado. Hora de votar." : paused ? "Pausado" : "";
+  $("vote-go").classList.toggle("due", remaining <= 0);
 }
 function setPauseBtn() {
   $("pause-btn").innerHTML = paused
@@ -1083,7 +1199,7 @@ function togglePause() { paused = !paused; setPauseBtn(); renderTimer(); }
 function addTime() { remaining = Math.max(0, remaining) + 30; total = Math.max(total, remaining); renderTimer(); }
 function beep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx || (audioCtx = new (window.AudioContext || window.webkitAudioContext)());
     [0, 0.32].forEach(t => {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = "sine"; o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
@@ -1171,6 +1287,8 @@ function finish(outcome) {
   $("result-cat").textContent = r.cat.name;
   $("result-imp-k").textContent = plural ? "Impostores" : "Impostor";
   $("result-impostors").textContent = r.impostors.join(", ");
+  $("result-acc-row").hidden = outcome !== "wrong";
+  if (outcome === "wrong") $("result-acc").textContent = r.innocent + " (era inocente)";
   renderScores(deltas, r.impostors);
   save();
   go("s-result");
@@ -1182,8 +1300,8 @@ function renderScores(deltas = {}, imps = []) {
     `<div class="lr ${s > 0 && s === top ? "lead" : ""}" style="--i:${i}"><span class="pos">${pad2(i + 1)}</span>${avatar(p, "sm")}<span class="nm">${esc(p)}</span>
       <span class="delta ${imps.includes(p) ? "amber" : ""}">${deltas[p] ? "+" + deltas[p] : ""}</span><span class="pts">${s}</span></div>`).join("");
 }
-function resetScores() {
-  if (!confirm("Zerar o placar de todos os jogadores?")) return;
+async function resetScores() {
+  if (!(await ask("Zerar o placar?", "Os pontos de todos os jogadores voltam para zero.", "Zerar placar", "Cancelar"))) return;
   state.scores = {}; save(); renderScores();
 }
 

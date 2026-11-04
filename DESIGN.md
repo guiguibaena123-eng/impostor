@@ -340,16 +340,24 @@ Heavy ink slabs that read like the bold block on a form.
 - **Switch:** 52 x 30px, 3px radius, hairline-grey track turning sky-deep when on; 24px sheet knob slides 22px over .3s.
 
 ### Navigation
-- **Top bar:** 44px row; a 44px back (or "x" to cancel a round) button pulled 12px into the gutter on the left, a mono uppercase case code on the right ("Caso Nº 0665", "Credencial 01/03"). No tab bar; the flow is linear and the footer slab is always the forward step.
+- **Top bar:** 44px row; a 44px back (or "x" to cancel a round) button pulled 12px into the gutter on the left, a mono uppercase case code on the right ("Caso Nº 0665", "Jogador 01/03"). No tab bar; the flow is linear and the footer slab is always the forward step.
+- **Round progress:** four equal segments (Segredo · Dicas · Votação · Resultado) under the bar on round screens. 3px tracks, sky-deep fill, with the current label in navy 600. The current segment grows in over .6s.
+- **Back:** every screen has one fixed parent screen. The on-screen back and the phone's back button do the same thing. Leaving a round in progress always asks first, through the Confirm Sheet.
 
 ### The Seal (signature)
-A 148px amber serrated wax seal with a white keyhole on the cover; at 112px inside the envelope it becomes the press-and-hold control. Holding for 650ms fills the amber ring (3px stroke, round cap) around it, the seal compresses to .94 while pressed, the phone vibrates 30ms, and the credential is revealed by a circular clip-path opening from 50% 58% over .75s. Releasing early resets the ring.
+A 148px amber serrated wax seal with a white keyhole on the cover; at 112px inside the envelope it becomes the press-and-hold control. Holding for 450ms fills the amber ring (3px stroke, round cap) around it, the seal compresses to .94 while pressed, the phone vibrates 30ms, and the credential is revealed by a circular clip-path opening from 50% 58% over .75s. Releasing early resets the ring.
+
+### Confirm Sheet
+A bottom sheet in place of the browser's confirm dialog. It has a navy 42% scrim, a sheet-colored panel with an 8px top radius, a 36px grab handle, an expanded uppercase 24px question, ink-2 body text, and two full-width buttons: the amber destructive action on top and the hairline "keep going" below it, which takes focus. It rises 32px over .32s. The scrim, Esc, or the phone's back button cancels it. On desktop it is centered at 420px with all four corners rounded.
+
+### Initials Badge
+A 38px square with a 4px radius and mono 600 initials (first and last word). There are three tones by player order: sky-wash/sky-ink, navy/sheet, and paper-2/navy with a hairline. Sizes are 46px (who starts) and 30px (scoreboard). The accused badge turns amber.
 
 ### Rubber Stamp (signature)
 The verdict: expanded 900 uppercase at clamp(24px, 7.2vw, 32px) inside a 3px border, 6px radius, rotated -5deg. Sky-deep for a crew win, amber for alarm ("Pego!"). It lands by scaling down from 1.35 with a fade over .45s after .1s. A smaller rotated (-4deg) mono stamp tags accused suspects.
 
 ### Motion
-One easing curve for the whole world: `cubic-bezier(.16, 1, .3, 1)`. Screens enter in .32s (fade plus 6px rise). The timer fill moves linearly every 1s. With `prefers-reduced-motion`, every animation and transition collapses to .01ms.
+One easing curve for the whole world: `cubic-bezier(.16, 1, .3, 1)`. Screen changes behave like a native push: going forward, the new screen slides in from the right, fully opaque, over the old one, which drifts 24% left (.34s). Going back reverses it (.3s). Neither screen ever goes translucent, which avoids double-exposure flicker. The credential is the one exception, with its own seal-break reveal. Selection micro-motion: the check stroke draws itself, the glyph nudges and the card presses to .95. Player rows slide in and collapse out, stepper values bump in the direction of change, and ledger rows cascade 60ms apart. The vote button pulses a sky ring when time runs out. The timer fill moves linearly every 1s. With `prefers-reduced-motion`, every animation and transition collapses to .01ms.
 
 ## Do's and Don'ts
 
