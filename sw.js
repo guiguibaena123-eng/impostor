@@ -1,10 +1,13 @@
 // Guarda os arquivos do jogo no celular para ele abrir mesmo sem internet.
 // Ao mudar qualquer arquivo do jogo, aumente o número da versão abaixo.
-const CACHE = "impostor-v1";
+const CACHE = "impostor-v3";
 const FILES = [
   "./",
   "./index.html",
   "./manifest.json",
+  "./words.js",
+  "./fonts/archivo.woff2",
+  "./fonts/jetbrains-mono.woff2",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-192.png",

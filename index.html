@@ -2,445 +2,924 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#14111f">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EEF2F5">
+<meta name="description" content="Jogo de festa: todos sabem a palavra secreta, menos um.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Impostor">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/favicon.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
 <title>Impostor</title>
 <style>
+  @font-face { font-family: "Archivo"; src: url("fonts/archivo.woff2") format("woff2");
+    font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+  @font-face { font-family: "JetBrains Mono"; src: url("fonts/jetbrains-mono.woff2") format("woff2");
+    font-weight: 400 700; font-display: swap; }
+
   :root {
-    --bg: #14111f;
-    --card: #221d33;
-    --card2: #2d2644;
-    --text: #f3f0ff;
-    --muted: #a59fc0;
-    --accent: #ffcc3d;
-    --danger: #ff4d6d;
-    --ok: #3ddc97;
-    --radius: 18px;
+    --paper: #EEF2F5;
+    --paper-2: #E2E8ED;
+    --sheet: #F9FBFC;
+    --ink: #0F2435;
+    --ink-2: #4A5D6E;
+    --ink-3: #5B6B78;
+    --rule: #C7D1D9;
+    --rule-soft: #D9E0E6;
+    --sky: #7CC6F2;
+    --sky-wash: #D7ECF9;
+    --sky-deep: #1F84C6;
+    --sky-ink: #0B5F94;
+    --amber: #D4441E;
+    --amber-deep: #B43A18;
+    --amber-wash: #FBE4DB;
+    --display: "Archivo", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --pad: 22px;
   }
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  body { display: flex; justify-content: center; }
-  #app { width: 100%; max-width: 480px; min-height: 100%; padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
-    display: flex; flex-direction: column; }
-  .screen { display: none; flex: 1; flex-direction: column; gap: 16px; animation: fade .25s ease; }
-  .screen.active { display: flex; }
-  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--display); font-size: 16px; line-height: 1.5; font-stretch: 100%;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    display: flex; justify-content: center;
+    background-image:
+      linear-gradient(rgba(15,36,53,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,36,53,.045) 1px, transparent 1px);
+    background-size: 24px 24px; background-position: -1px -1px;
+    caret-color: var(--amber);
+  }
+  ::selection { background: var(--sky); color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--sky-deep); outline-offset: 3px; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+  button:disabled { cursor: default; }
+  svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 
-  h1 { font-size: 44px; margin: 0; letter-spacing: 1px; }
-  h2 { font-size: 26px; margin: 0; }
-  h3 { font-size: 15px; margin: 0 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-  p { margin: 0; line-height: 1.5; color: var(--muted); }
-  .grow { flex: 1; }
-  .center { text-align: center; }
+  #app { position: relative; width: 100%; max-width: 460px; min-height: 100dvh;
+    padding: calc(14px + env(safe-area-inset-top)) var(--pad) calc(34px + env(safe-area-inset-bottom)); }
 
-  button { font: inherit; border: 0; cursor: pointer; color: inherit; }
-  .btn { width: 100%; padding: 17px; border-radius: var(--radius); font-size: 18px; font-weight: 700;
-    background: var(--accent); color: #1b1530; transition: transform .1s; }
-  .btn:active { transform: scale(.97); }
-  .btn.secondary { background: var(--card2); color: var(--text); }
-  .btn.danger { background: var(--danger); color: #fff; }
-  .btn:disabled { opacity: .4; }
+  /* marcas de corte nos cantos da folha */
+  #app::before, #app::after { content: ""; position: fixed; width: 14px; height: 14px; pointer-events: none; z-index: 0;
+    border-color: var(--ink-3); border-style: solid; opacity: .45; }
+  #app::before { top: calc(8px + env(safe-area-inset-top)); left: max(8px, calc(50% - 222px)); border-width: 1px 0 0 1px; }
+  #app::after { bottom: calc(8px + env(safe-area-inset-bottom)); right: max(8px, calc(50% - 222px)); border-width: 0 1px 1px 0; }
 
-  .panel { background: var(--card); border-radius: var(--radius); padding: 16px; }
+  .screen { display: none; min-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); flex-direction: column; }
+  .screen.active { display: flex; animation: enter .32s var(--ease); }
+  @keyframes enter { from { opacity: 0; transform: translateY(6px); } }
 
-  .players { display: flex; flex-direction: column; gap: 8px; }
-  .player-row { display: flex; align-items: center; gap: 10px; background: var(--card2); border-radius: 12px; padding: 10px 12px; }
-  .player-row span { flex: 1; font-size: 17px; }
-  .icon-btn { width: 34px; height: 34px; border-radius: 10px; background: transparent; color: var(--muted); font-size: 20px; }
-  .add-row { display: flex; gap: 8px; margin-top: 10px; }
-  .add-row input { flex: 1; min-width: 0; padding: 13px 14px; border-radius: 12px; border: 2px solid var(--card2);
-    background: var(--bg); color: var(--text); font-size: 17px; outline: none; }
-  .add-row input:focus { border-color: var(--accent); }
-  .add-row button { padding: 0 18px; border-radius: 12px; background: var(--accent); color: #1b1530; font-size: 24px; font-weight: 700; }
+  /* barra superior: navegação + código do caso */
+  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-bottom: 18px; gap: 12px; }
+  .back { width: 44px; height: 44px; margin-left: -12px; display: grid; place-items: center; border-radius: 4px; color: var(--ink); }
+  .back:active { background: var(--paper-2); }
+  .code { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .code b { color: var(--ink); font-weight: 600; }
 
-  .stepper { display: flex; align-items: center; justify-content: space-between; }
-  .stepper .ctrl { display: flex; align-items: center; gap: 14px; }
-  .stepper button { width: 42px; height: 42px; border-radius: 12px; background: var(--card2); font-size: 22px; font-weight: 700; }
-  .stepper b { font-size: 22px; min-width: 50px; text-align: center; }
-  .stepper + .stepper { margin-top: 12px; }
+  h1, h2, .xl { font-family: var(--display); font-stretch: 125%; text-transform: uppercase; margin: 0; letter-spacing: -.01em; line-height: .95; }
+  h2 { font-size: 30px; font-weight: 800; text-wrap: balance; }
+  .lede { color: var(--ink-2); font-size: 16px; margin: 10px 0 0; max-width: 34ch; text-wrap: pretty; }
+  .foot { position: relative; z-index: 1; margin-top: auto; padding-top: 24px; display: flex; flex-direction: column; gap: 10px; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { padding: 10px 14px; border-radius: 999px; background: var(--card2); color: var(--muted); font-size: 15px; font-weight: 600; }
-  .chip.on { background: var(--accent); color: #1b1530; }
+  /* botões */
+  .btn { position: relative; width: 100%; min-height: 60px; padding: 0 20px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-stretch: 125%; font-weight: 700; font-size: 15px; letter-spacing: .04em; text-transform: uppercase;
+    background: var(--ink); color: var(--sheet); transition: transform .15s var(--ease), background .2s, opacity .2s; }
+  .btn:active:not(:disabled) { transform: scale(.985); }
+  .btn:disabled { background: var(--paper-2); color: var(--ink-2); box-shadow: inset 0 0 0 1.5px var(--rule); opacity: 1; }
+  .btn.line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .btn.alarm { background: var(--amber); color: #fff; }
+  .btn.quiet { min-height: 48px; background: transparent; color: var(--ink-2); justify-content: center; font-size: 13px; }
+  .btn .i { width: 20px; height: 20px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row2 .btn { justify-content: center; padding: 0 12px; font-size: 13.5px; white-space: nowrap; }
 
-  .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
-  .switch { width: 54px; height: 32px; border-radius: 999px; background: var(--card2); position: relative; flex-shrink: 0; transition: background .2s; }
-  .switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .2s; }
-  .switch.on { background: var(--ok); }
-  .switch.on::after { left: 26px; }
+  /* blocos de ficha */
+  .field { border-top: 1.5px solid var(--ink); padding: 14px 0 6px; margin-top: 26px; }
+  .field-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .field-title { font-stretch: 125%; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .line-item { display: flex; align-items: center; gap: 14px; min-height: 58px; border-bottom: 1px solid var(--rule-soft); }
+  .line-item:last-child { border-bottom: 0; }
+  .line-item .label { flex: 1; font-size: 16px; }
+  .line-item .label small { display: block; color: var(--ink-2); font-size: 13.5px; line-height: 1.35; }
 
-  .logo { font-size: 90px; line-height: 1; }
-  .big-name { font-size: 38px; font-weight: 800; color: var(--accent); word-break: break-word; }
+  /* agentes */
+  .agent { display: flex; align-items: center; gap: 14px; min-height: 52px; border-bottom: 1px solid var(--rule-soft); }
+  .agent .n { font-family: var(--mono); font-size: 12px; color: var(--ink-3); width: 22px; font-variant-numeric: tabular-nums; }
+  .agent .name { flex: 1; font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
+  .agent .rm { width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--ink-3); border-radius: 4px; }
+  .agent .rm:active { color: var(--amber-deep); background: var(--amber-wash); }
+  .add { display: flex; gap: 8px; margin-top: 12px; }
+  .add input { flex: 1; min-width: 0; height: 52px; padding: 0 14px; border-radius: 4px; border: 1.5px solid var(--rule);
+    background: var(--sheet); color: var(--ink); font: 500 17px var(--display); outline: none; transition: border-color .2s; }
+  .add input::placeholder { color: var(--ink-2); }
+  .add input:focus { border-color: var(--sky-deep); }
+  .add button { width: 52px; height: 52px; border-radius: 4px; background: var(--ink); color: var(--sheet); display: grid; place-items: center; }
+  .empty-note { color: var(--ink-2); font-size: 14.5px; padding: 6px 0 2px; }
 
-  .reveal-card { flex: 1; min-height: 300px; border-radius: 26px; background: var(--card); display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; user-select: none; -webkit-user-select: none; }
-  .reveal-card.impostor { background: linear-gradient(160deg, #5a1630, #2a0f1f); }
-  .reveal-card.word { background: linear-gradient(160deg, #24345c, #1a1f3d); }
-  .secret { font-size: 40px; font-weight: 800; word-break: break-word; }
-  .reveal-card.impostor .secret { color: var(--danger); }
+  /* contador */
+  .stepper { display: flex; align-items: center; gap: 4px; }
+  .stepper button { width: 44px; height: 44px; border-radius: 4px; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--rule); }
+  .stepper button:active:not(:disabled) { background: var(--paper-2); }
+  .stepper button:disabled { opacity: .3; }
+  .stepper output { min-width: 58px; text-align: center; font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  .timer { font-size: 84px; font-weight: 800; font-variant-numeric: tabular-nums; text-align: center; }
-  .timer.low { color: var(--danger); }
+  /* interruptor */
+  .switch { width: 52px; height: 30px; border-radius: 3px; background: var(--rule); position: relative; flex-shrink: 0; transition: background .25s var(--ease); }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 2px;
+    background: var(--sheet); box-shadow: 0 1px 3px rgba(15,36,53,.25); transition: transform .3s var(--ease); }
+  .switch[aria-checked="true"] { background: var(--sky-deep); }
+  .switch[aria-checked="true"]::after { transform: translateX(22px); }
 
-  .vote-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .vote-btn { padding: 18px 10px; border-radius: 14px; background: var(--card2); font-size: 17px; font-weight: 700; word-break: break-word; }
-  .vote-btn.sel { background: var(--accent); color: #1b1530; }
-  .vote-btn.out { opacity: .3; text-decoration: line-through; pointer-events: none; }
+  /* linha que abre os arquivos */
+  .files-link { width: 100%; text-align: left; display: flex; align-items: center; gap: 14px; padding: 14px 0; }
+  .files-link .label { flex: 1; }
+  .glyph-strip { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .glyph-strip .i { width: 18px; height: 18px; color: var(--ink-2); }
 
-  .result-emoji { font-size: 80px; }
-  .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--card2); font-size: 14px; color: var(--muted); }
-  .score-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card2); font-size: 17px; }
-  .score-row:last-child { border-bottom: 0; }
-  .rules li { margin-bottom: 10px; color: var(--muted); line-height: 1.5; }
-  .rules b { color: var(--text); }
-  .row { display: flex; gap: 10px; }
+  /* ===== ARQUIVOS (categorias) ===== */
+  .tally { display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; padding: 12px 0;
+    border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .tally .big { font-family: var(--mono); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tally .big span { color: var(--ink-3); font-weight: 400; }
+  .chips { display: flex; gap: 8px; margin: 14px 0 16px; }
+  .chip { height: 38px; padding: 0 14px; border-radius: 2px; box-shadow: inset 0 0 0 1.5px var(--rule);
+    font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .chip:active { background: var(--paper-2); }
+  .chip .i { width: 16px; height: 16px; }
+
+  .files { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 10px; padding-top: 12px; }
+  .file { position: relative; text-align: left; min-height: 168px; padding: 14px 13px 12px; border-radius: 0 4px 4px 4px;
+    background: var(--paper-2); color: var(--ink-2); display: flex; flex-direction: column; gap: 6px;
+    transition: background .25s var(--ease), color .25s, box-shadow .25s; }
+  /* aba da pasta */
+  .file::before { content: ""; position: absolute; left: 0; top: -9px; width: 46%; height: 10px; border-radius: 4px 6px 0 0;
+    background: inherit; clip-path: polygon(0 0, 82% 0, 100% 100%, 0 100%); }
+  .file .top { display: flex; justify-content: space-between; align-items: center; }
+  .file .id { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--ink-3); }
+  .file .mark { width: 20px; height: 20px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px var(--ink-3); display: grid; place-items: center; transition: background .2s, box-shadow .2s; }
+  .file .mark .i { width: 14px; height: 14px; stroke-width: 2.4; opacity: 0; color: var(--ink); transition: opacity .2s; }
+  .file .gl .i { width: 30px; height: 30px; stroke-width: 1.4; margin: 6px 0 2px; }
+  .file .nm { font-stretch: 112%; font-weight: 700; font-size: 16px; line-height: 1.15; color: var(--ink); }
+  .file .nt { font-size: 13.5px; line-height: 1.35; }
+  .file .mag { margin-top: auto; display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .file .dot { border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .file[aria-pressed="true"] { background: var(--sheet); color: var(--ink-2); box-shadow: 0 1px 2px rgba(15,36,53,.06), 0 8px 22px -12px rgba(15,36,53,.35); }
+  .file[aria-pressed="true"]::before { background: var(--sky); }
+  .file[aria-pressed="true"] .mark { background: var(--sky); box-shadow: none; }
+  .file[aria-pressed="true"] .mark .i { opacity: 1; }
+  .file[aria-pressed="true"] .gl { color: var(--sky-ink); }
+  .file[aria-pressed="true"] .dot { color: var(--sky-deep); }
+  .file:active { transform: scale(.98); }
+
+  .sticky-foot { position: sticky; bottom: 0; margin: 0 calc(var(--pad) * -1); padding: 16px var(--pad) calc(4px + env(safe-area-inset-bottom));
+    background: linear-gradient(transparent, var(--paper) 30%); }
+
+  /* ===== CAPA ===== */
+  .cover-title { font-size: 64px; font-weight: 900; letter-spacing: -.025em; line-height: .86; margin-top: 8px; white-space: nowrap; }
+  .fit-line { white-space: nowrap; display: block; }
+  .cover-rule { height: 1.5px; background: var(--ink); margin: 18px 0 14px; }
+  .cover-line { font-size: 19px; line-height: 1.35; max-width: 20ch; }
+  .cover-line em { font-style: normal; color: var(--amber-deep); font-weight: 600; }
+  .seal-wrap { flex: 1; display: grid; place-items: center; min-height: 200px; position: relative; }
+  .seal { width: 148px; height: 148px; color: var(--amber); filter: drop-shadow(0 10px 14px rgba(180,58,24,.28)); }
+  .ios-hint { font-size: 13.5px; color: var(--ink-2); text-align: center; margin: 4px 0 0; }
+
+  /* ===== PROTOCOLO ===== */
+  .steps { list-style: none; margin: 22px 0 0; padding: 0; counter-reset: s; }
+  .steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 6px; padding: 14px 0; border-top: 1px solid var(--rule-soft); font-size: 15.5px; color: var(--ink-2); }
+  .steps li::before { content: counter(s, decimal-leading-zero); font-family: var(--mono); font-size: 12px; color: var(--sky-ink); padding-top: 3px; }
+  .steps b { color: var(--ink); font-weight: 600; }
+  .scoring { margin-top: 8px; border: 1.5px solid var(--ink); border-radius: 4px; }
+  .scoring div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 14px; font-size: 14.5px; border-top: 1px solid var(--rule-soft); }
+  .scoring div:first-child { border-top: 0; }
+  .scoring b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ===== ENVELOPE (passar o celular) ===== */
+  .handoff-to { color: var(--ink-2); font-size: 15px; margin: 4px 0 6px; }
+  .handoff-name { font-size: clamp(38px, 12vw, 56px); font-weight: 900; overflow-wrap: anywhere; }
+  .envelope { position: relative; flex: 1; min-height: 300px; margin-top: 22px; border-radius: 4px; background: var(--sheet);
+    box-shadow: 0 1px 2px rgba(15,36,53,.08), 0 18px 40px -22px rgba(15,36,53,.45); overflow: hidden;
+    display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .envelope .flap { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .envelope .flap path { fill: none; stroke: var(--rule); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+  .envelope .stamp-line { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; justify-content: space-between; }
+  .hold { position: relative; width: 150px; height: 150px; display: grid; place-items: center; margin-top: 18px; }
+  .hold .seal { width: 112px; height: 112px; transition: transform .35s var(--ease); }
+  .hold.pressing .seal { transform: scale(.94); }
+  .hold .ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .hold .ring circle { fill: none; stroke-width: 3; }
+  .hold .ring .track { stroke: var(--rule-soft); }
+  .hold .ring .prog { stroke: var(--amber); stroke-linecap: round; stroke-dasharray: 452.4; stroke-dashoffset: 452.4; }
+  .hold-label { position: absolute; bottom: 44px; left: 0; right: 0; text-align: center; font-stretch: 125%; font-weight: 700; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+
+  /* ===== CREDENCIAL ===== */
+  #s-secret.active { animation: breakSeal .75s var(--ease); }
+  @keyframes breakSeal { from { clip-path: circle(0% at 50% 58%); } to { clip-path: circle(150% at 50% 58%); } }
+  .cred { flex: 1; display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; background: var(--sheet);
+    box-shadow: 0 1px 2px rgba(15,36,53,.08), 0 18px 40px -22px rgba(15,36,53,.45); }
+  .cred-band { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--sky); color: var(--ink); }
+  .cred-band .code { color: var(--ink); }
+  .cred-body { flex: 1; display: flex; flex-direction: column; padding: 18px 16px 16px; }
+  .cred-meta { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule-soft); }
+  .cred-meta .k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .cred-meta .v { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+  .cred-word { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 18px 0; min-height: 180px; }
+  .cred-word .k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+  .word-fit { font-stretch: 112%; font-weight: 800; line-height: 1; letter-spacing: -.02em; color: var(--ink); overflow-wrap: normal; word-break: normal; hyphens: none; }
+  .redact { display: flex; flex-direction: column; gap: 10px; }
+  .redact span { display: block; height: 34px; background: var(--ink); border-radius: 2px; }
+  .cred-note { font-size: 14.5px; color: var(--ink-2); padding-top: 14px; border-top: 1px solid var(--rule-soft); }
+  .cred-note b { color: var(--ink); }
+  .cred.impostor .cred-band { background: var(--amber); color: #fff; }
+  .cred.impostor .cred-band .code { color: #fff; }
+  .cred.impostor .imp-title { font-size: 48px; font-weight: 900; color: var(--amber-deep); margin: 18px 0 6px; }
+
+  /* ===== CONVERSA ===== */
+  .first { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding: 14px 0; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .first .k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .first .v { font-stretch: 125%; font-size: 22px; font-weight: 800; text-transform: uppercase; overflow-wrap: anywhere; }
+  .clock { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 240px; }
+  .clock .t { font-stretch: 125%; font-weight: 800; font-size: clamp(84px, 30vw, 132px); line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; transition: color .3s; }
+  .clock.low .t { color: var(--amber); }
+  .clock .track { width: 100%; height: 3px; background: var(--rule-soft); margin-top: 22px; border-radius: 2px; overflow: hidden; }
+  .clock .fill { height: 100%; background: var(--sky-deep); transform-origin: left; transition: transform 1s linear, background .3s; }
+  .clock.low .fill { background: var(--amber); }
+  .clock .status { margin-top: 12px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); min-height: 18px; }
+  .talk-help { font-size: 15px; color: var(--ink-2); text-align: center; max-width: 32ch; margin: 0 auto; text-wrap: balance; }
+
+  /* ===== VOTAÇÃO ===== */
+  .suspects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+  .suspect { position: relative; min-height: 76px; padding: 12px 14px; border-radius: 4px; text-align: left;
+    background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); display: flex; flex-direction: column; justify-content: space-between; gap: 8px; overflow: hidden;
+    transition: box-shadow .2s, background .2s; }
+  .suspect .n { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+  .suspect .name { font-size: 17px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+  .suspect[aria-pressed="true"] { box-shadow: inset 0 0 0 2.5px var(--amber); background: var(--amber-wash); }
+  .suspect[aria-pressed="true"] .n { color: var(--amber-deep); }
+  .suspect.caught { background: var(--paper-2); box-shadow: none; color: var(--ink-3); pointer-events: none; }
+  .suspect.caught .name { text-decoration: line-through; text-decoration-thickness: 2px; }
+  .suspect .tag { position: absolute; right: 10px; top: 10px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--amber-deep); box-shadow: inset 0 0 0 1.5px currentColor; padding: 2px 6px; border-radius: 2px; transform: rotate(-4deg); }
+  .notice { margin-top: 18px; padding: 14px 16px; border-radius: 4px; background: var(--amber-wash); color: var(--amber-deep); font-size: 15px; display: none; }
+  .notice.on { display: block; animation: enter .35s var(--ease); }
+  .notice b { color: var(--ink); }
+
+  /* ===== VEREDITO ===== */
+  .verdict { display: grid; place-items: center; padding: 26px 0 10px; }
+  .stamp { display: inline-block; padding: 10px 18px 9px; border: 3px solid currentColor; border-radius: 6px; transform: rotate(-5deg);
+    font-stretch: 125%; font-weight: 900; font-size: clamp(24px, 7.2vw, 32px); line-height: 1; text-transform: uppercase; text-align: center; color: var(--sky-deep);
+    animation: stamp .45s var(--ease) both .1s; }
+  .stamp.alarm { color: var(--amber); }
+  @keyframes stamp { from { opacity: 0; transform: rotate(-5deg) scale(1.35); } to { opacity: 1; transform: rotate(-5deg) scale(1); } }
+  .verdict p { text-align: center; color: var(--ink-2); margin: 20px auto 0; max-width: 32ch; font-size: 15.5px; text-wrap: balance; }
+  .record { margin-top: 22px; border-top: 1.5px solid var(--ink); }
+  .record .r { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+  .record .k { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .record .v { font-size: 17px; font-weight: 600; overflow-wrap: anywhere; }
+  .record .v.word { font-stretch: 125%; font-size: 22px; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
+  .record .v.amber { color: var(--amber-deep); }
+  .ledger { margin-top: 26px; }
+  .ledger .lr { display: grid; grid-template-columns: 28px 1fr auto 44px; gap: 10px; align-items: center; min-height: 46px; border-bottom: 1px solid var(--rule-soft); }
+  .ledger .pos { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+  .ledger .nm { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
+  .ledger .lr.lead .nm { font-weight: 700; }
+  .ledger .lr.lead .pos { color: var(--sky-ink); font-weight: 600; }
+  .ledger .delta { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--sky-ink); text-align: right; }
+  .ledger .delta.amber { color: var(--amber-deep); }
+  .ledger .pts { font-family: var(--mono); font-size: 18px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+  @media (min-width: 520px) {
+    body { align-items: center; padding: 28px 0; }
+    #app { min-height: 0; margin: auto 0; padding: 30px; border-radius: 4px; background: var(--sheet);
+      box-shadow: 0 0 0 1px var(--rule), 0 1px 2px rgba(15,36,53,.08), 0 30px 60px -30px rgba(15,36,53,.45); }
+    #app::before, #app::after { position: absolute; }
+    #app::before { top: -10px; left: -10px; }
+    #app::after { bottom: -10px; right: -10px; }
+    .screen { min-height: min(calc(100dvh - 150px), 740px); }
+    .seal-wrap { max-height: 240px; min-height: 160px; }
+    .sticky-foot { background: linear-gradient(transparent, var(--sheet) 30%); margin: 0 -30px; padding: 16px 30px 0; }
+    .envelope, .cred { background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+    .file { background: var(--paper); }
+    .file[aria-pressed="true"] { background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--ink); }
+  }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M4 7h3.5c4 0 5 10 9 10H20M4 17h3.5c1.6 0 2.7-1.6 3.6-3.5M14 9.5c.7-1.4 1.6-2.5 2.5-2.5H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/></symbol>
+    <symbol id="i-all" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12.5l3 3 5-6"/></symbol>
+    <symbol id="i-none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+  </defs>
+</svg>
+
 <div id="app">
 
-  <!-- INÍCIO -->
-  <section class="screen active" id="s-home">
-    <div class="grow"></div>
-    <div class="center">
-      <div class="logo">🕵️</div>
-      <h1>Impostor</h1>
-      <p style="margin-top:8px">Todos sabem a palavra secreta.<br>Menos um.</p>
+  <!-- CAPA -->
+  <section class="screen active" id="s-home" aria-label="Início">
+    <div class="bar">
+      <span class="code">Dossiê <b id="case-no">Nº 0000</b></span>
+      <span class="code" style="color:var(--amber-deep)">Confidencial</span>
     </div>
-    <div class="grow"></div>
-    <button class="btn" onclick="go('s-setup')">Jogar</button>
-    <button class="btn secondary" onclick="go('s-rules')">Como jogar</button>
-    <button class="btn secondary" id="install-btn" style="display:none" onclick="installApp()">📲 Instalar no celular</button>
-    <p class="center" id="ios-hint" style="display:none;font-size:14px">Para instalar no iPhone: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>
+    <h1 class="cover-title fit-line" data-max="150">Impostor</h1>
+    <div class="cover-rule"></div>
+    <p class="code" id="cover-facts" style="margin:0 0 14px"></p>
+    <p class="cover-line">Todos sabem a palavra secreta. <em>Menos um.</em></p>
+    <div class="seal-wrap">
+      <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><use href="#seal"/></svg>
+    </div>
+    <div class="foot">
+      <button class="btn" onclick="go('s-setup')">Abrir caso <svg class="i"><use href="#i-arrow"/></svg></button>
+      <div class="row2">
+        <button class="btn line" onclick="go('s-rules')">Como jogar</button>
+        <button class="btn line" id="install-btn" onclick="installApp()" hidden><svg class="i"><use href="#i-down"/></svg> Instalar</button>
+      </div>
+      <p class="ios-hint" id="ios-hint" hidden>No iPhone: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>
+    </div>
   </section>
 
-  <!-- REGRAS -->
-  <section class="screen" id="s-rules">
+  <!-- PROTOCOLO -->
+  <section class="screen" id="s-rules" aria-label="Como jogar">
+    <div class="bar">
+      <button class="back" onclick="go('s-home')" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
+      <span class="code case-ref"></span>
+    </div>
     <h2>Como jogar</h2>
-    <div class="panel">
-      <ol class="rules" style="padding-left:20px;margin:0">
-        <li>Coloque o nome de todos os jogadores (mínimo 3).</li>
-        <li><b>Passe o celular</b>: cada um toca na carta, vê o segredo sozinho e esconde de novo.</li>
-        <li>Todos recebem a <b>mesma palavra</b>, menos o <b>impostor</b>, que não sabe qual é.</li>
-        <li>Na sua vez, cada um fala <b>uma palavra de dica</b>. Não pode ser óbvia demais, senão o impostor descobre!</li>
-        <li>O impostor tenta disfarçar e adivinhar a palavra pelas dicas dos outros.</li>
-        <li>No fim, o grupo <b>vota</b> em quem acha que é o impostor.</li>
-        <li>Se pegarem o impostor, ele ainda tem <b>uma chance de acertar a palavra</b> e roubar a vitória.</li>
-      </ol>
+    <ol class="steps">
+      <li><span>Coloquem o nome de todos os jogadores. São <b>3 ou mais</b>.</span></li>
+      <li><span>O celular passa de mão em mão. Cada um <b>segura o lacre</b>, vê a credencial sozinho e lacra de novo.</span></li>
+      <li><span>Todos recebem a <b>mesma palavra</b>, menos o impostor. A credencial dele vem com a palavra riscada.</span></li>
+      <li><span>Na sua vez, cada um diz <b>uma palavra de pista</b>. Óbvia demais entrega o jogo ao impostor.</span></li>
+      <li><span>O impostor disfarça e tenta descobrir a palavra pelas pistas dos outros.</span></li>
+      <li><span>Quando o tempo acabar, o grupo <b>vota em voz alta</b> e marca o acusado no celular.</span></li>
+      <li><span>Se o impostor for pego, ele ainda pode <b>dizer a palavra</b> para roubar a vitória.</span></li>
+    </ol>
+    <div class="field" style="margin-top:14px">
+      <div class="field-head"><span class="field-title">Pontos</span></div>
+      <div class="scoring">
+        <div><span>Grupo pegou o impostor</span><b>+1 cada</b></div>
+        <div><span>Impostor pego, mas acertou a palavra</span><b>+2</b></div>
+        <div><span>Impostor escapou da votação</span><b>+3</b></div>
+      </div>
     </div>
-    <div class="grow"></div>
-    <button class="btn" onclick="go('s-home')">Entendi</button>
+    <div class="foot">
+      <button class="btn" onclick="go('s-setup')">Abrir caso <svg class="i"><use href="#i-arrow"/></svg></button>
+    </div>
   </section>
 
-  <!-- CONFIGURAÇÃO -->
-  <section class="screen" id="s-setup">
-    <h2>Preparar partida</h2>
+  <!-- OPERAÇÃO -->
+  <section class="screen" id="s-setup" aria-label="Preparar partida">
+    <div class="bar">
+      <button class="back" onclick="go('s-home')" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
+      <span class="code case-ref"></span>
+    </div>
+    <h2>Montar a operação</h2>
 
-    <div class="panel">
-      <h3>Jogadores (<span id="player-count">0</span>)</h3>
-      <div class="players" id="player-list"></div>
-      <form class="add-row" onsubmit="addPlayer(event)">
-        <input id="player-input" maxlength="16" placeholder="Nome do jogador" autocomplete="off">
-        <button type="submit">+</button>
+    <div class="field">
+      <div class="field-head">
+        <span class="field-title">Agentes</span>
+        <span class="code"><b id="player-count">0</b> na mesa</span>
+      </div>
+      <div id="player-list"></div>
+      <form class="add" onsubmit="addPlayer(event)">
+        <input id="player-input" maxlength="16" placeholder="Nome do jogador" autocomplete="off" enterkeyhint="done" aria-label="Nome do jogador">
+        <button type="submit" aria-label="Adicionar jogador"><svg class="i"><use href="#i-plus"/></svg></button>
       </form>
     </div>
 
-    <div class="panel">
-      <div class="stepper">
-        <span>Impostores</span>
-        <div class="ctrl">
-          <button onclick="changeImpostors(-1)">−</button>
-          <b id="impostor-count">1</b>
-          <button onclick="changeImpostors(1)">+</button>
+    <div class="field">
+      <div class="field-head"><span class="field-title">Regras da rodada</span></div>
+      <div class="line-item">
+        <span class="label">Impostores<small id="imp-help">Até 1 com essa turma</small></span>
+        <div class="stepper">
+          <button id="imp-minus" onclick="changeImpostors(-1)" aria-label="Menos impostores"><svg class="i"><use href="#i-minus"/></svg></button>
+          <output id="impostor-count">1</output>
+          <button id="imp-plus" onclick="changeImpostors(1)" aria-label="Mais impostores"><svg class="i"><use href="#i-plus"/></svg></button>
         </div>
       </div>
-      <div class="stepper">
-        <span>Tempo de conversa</span>
-        <div class="ctrl">
-          <button onclick="changeTime(-30)">−</button>
-          <b id="time-label">3:00</b>
-          <button onclick="changeTime(30)">+</button>
+      <div class="line-item">
+        <span class="label">Tempo de pistas<small>Para falar e conversar</small></span>
+        <div class="stepper">
+          <button onclick="changeTime(-30)" aria-label="Menos tempo"><svg class="i"><use href="#i-minus"/></svg></button>
+          <output id="time-label">3:00</output>
+          <button onclick="changeTime(30)" aria-label="Mais tempo"><svg class="i"><use href="#i-plus"/></svg></button>
         </div>
       </div>
-      <div class="toggle" onclick="toggleHint()">
-        <div>
-          <div>Dica para o impostor</div>
-          <p style="font-size:14px">O impostor vê a categoria da palavra</p>
-        </div>
-        <div class="switch" id="hint-switch"></div>
+      <div class="line-item" style="cursor:pointer" onclick="toggleHint()">
+        <span class="label">Pista para o impostor<small>Ele vê de qual arquivo é a palavra</small></span>
+        <button class="switch" id="hint-switch" role="switch" aria-checked="true" aria-label="Pista para o impostor" onclick="event.stopPropagation();toggleHint()"></button>
       </div>
     </div>
 
-    <div class="panel">
-      <h3>Categorias</h3>
-      <div class="chips" id="category-list"></div>
+    <div class="field">
+      <button class="files-link" onclick="go('s-files')">
+        <span class="label">
+          <span class="field-title">Arquivos de palavras</span>
+          <small class="code" style="display:block;margin-top:6px" id="files-summary"></small>
+          <span class="glyph-strip" id="glyph-strip"></span>
+        </span>
+        <svg class="i"><use href="#i-chev"/></svg>
+      </button>
     </div>
 
-    <button class="btn" id="start-btn" onclick="startRound()">Começar</button>
-    <button class="btn secondary" onclick="go('s-home')">Voltar</button>
+    <div class="foot">
+      <button class="btn" id="start-btn" onclick="startRound()">Distribuir credenciais <svg class="i"><use href="#i-arrow"/></svg></button>
+    </div>
   </section>
 
-  <!-- PASSAR O CELULAR -->
-  <section class="screen" id="s-pass">
-    <div class="grow"></div>
-    <div class="center">
-      <p>Passe o celular para</p>
-      <div class="big-name" id="pass-name"></div>
-      <p style="margin-top:12px">Ninguém mais pode olhar a tela!</p>
+  <!-- ARQUIVOS -->
+  <section class="screen" id="s-files" aria-label="Categorias">
+    <div class="bar">
+      <button class="back" onclick="go('s-setup')" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
+      <span class="code case-ref"></span>
     </div>
-    <div class="grow"></div>
-    <button class="btn" onclick="showSecret()">Sou eu, ver meu segredo</button>
+    <h2>Arquivos</h2>
+    <p class="lede">Escolha de quais arquivos sai a palavra secreta. Cada rodada sorteia um deles.</p>
+    <div class="tally">
+      <span class="big" id="tally-cats">0<span>/0</span></span>
+      <span class="code"><b id="tally-words">0</b> palavras em jogo</span>
+    </div>
+    <div class="chips">
+      <button class="chip" onclick="setAllCats(true)"><svg class="i"><use href="#i-all"/></svg>Todos</button>
+      <button class="chip" onclick="setAllCats(false)"><svg class="i"><use href="#i-none"/></svg>Nenhum</button>
+      <button class="chip" onclick="randomCats()"><svg class="i"><use href="#i-shuffle"/></svg>Sortear 5</button>
+    </div>
+    <div class="files" id="files"></div>
+    <div class="sticky-foot">
+      <button class="btn" id="files-done" onclick="go('s-setup')">Confirmar arquivos <svg class="i"><use href="#i-check"/></svg></button>
+    </div>
   </section>
 
-  <!-- VER SEGREDO -->
-  <section class="screen" id="s-secret">
-    <div class="reveal-card" id="secret-card">
-      <p id="secret-label"></p>
-      <div class="secret" id="secret-text"></div>
-      <span class="tag" id="secret-extra"></span>
+  <!-- ENVELOPE -->
+  <section class="screen" id="s-pass" aria-label="Passar o celular">
+    <div class="bar">
+      <button class="back" onclick="abortRound()" aria-label="Cancelar rodada"><svg class="i"><use href="#i-x"/></svg></button>
+      <span class="code">Credencial <b id="pass-step">01/03</b></span>
     </div>
-    <button class="btn" onclick="hideSecret()">Esconder e passar</button>
+    <p class="handoff-to">Entregue o celular para</p>
+    <h2 class="handoff-name" id="pass-name"></h2>
+    <div class="envelope" id="envelope">
+      <svg class="flap" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L50 46 L100 0"/></svg>
+      <div class="hold" id="hold">
+        <svg class="ring" viewBox="0 0 150 150" aria-hidden="true"><circle class="track" cx="75" cy="75" r="72"/><circle class="prog" id="hold-prog" cx="75" cy="75" r="72"/></svg>
+        <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><use href="#seal"/></svg>
+      </div>
+      <div class="hold-label" id="hold-label">Segure o lacre para abrir</div>
+      <div class="stamp-line"><span class="code">Somente para os olhos de</span><span class="code"><b id="pass-name-small"></b></span></div>
+    </div>
+  </section>
+
+  <!-- CREDENCIAL -->
+  <section class="screen" id="s-secret" aria-label="Seu segredo">
+    <div class="cred" id="cred">
+      <div class="cred-band"><span class="code" id="cred-status">Acesso liberado</span><span class="code" id="cred-step"></span></div>
+      <div class="cred-body" id="cred-body"></div>
+    </div>
+    <div class="foot">
+      <button class="btn" onclick="hideSecret()">Lacrar e passar <svg class="i"><use href="#i-arrow"/></svg></button>
+    </div>
   </section>
 
   <!-- CONVERSA -->
-  <section class="screen" id="s-talk">
-    <div class="center">
-      <p>Quem começa a dar dica</p>
-      <div class="big-name" id="first-name"></div>
+  <section class="screen" id="s-talk" aria-label="Hora das pistas">
+    <div class="bar">
+      <button class="back" onclick="abortRound()" aria-label="Cancelar rodada"><svg class="i"><use href="#i-x"/></svg></button>
+      <span class="code case-ref"></span>
     </div>
-    <div class="grow"></div>
-    <div class="timer" id="timer">3:00</div>
-    <p class="center">Cada um fala uma palavra de dica, na ordem da roda.<br>Depois conversem e descubram o impostor.</p>
-    <div class="grow"></div>
-    <div class="row">
-      <button class="btn secondary" id="pause-btn" onclick="togglePause()">Pausar</button>
-      <button class="btn secondary" onclick="addTime()">+30s</button>
+    <h2>Hora das pistas</h2>
+    <div class="first"><span class="k">Começa</span><span class="v" id="first-name"></span></div>
+    <div class="clock" id="clock">
+      <div class="t" id="timer">3:00</div>
+      <div class="track"><div class="fill" id="timer-fill"></div></div>
+      <div class="status" id="timer-status"></div>
     </div>
-    <button class="btn" onclick="goVote()">Ir para votação</button>
+    <p class="talk-help">Cada um diz uma palavra de pista, seguindo a roda. Depois conversem e desconfiem.</p>
+    <div class="foot">
+      <div class="row2">
+        <button class="btn line" id="pause-btn" onclick="togglePause()"><svg class="i"><use href="#i-pause"/></svg> Pausar</button>
+        <button class="btn line" onclick="addTime()"><svg class="i"><use href="#i-plus"/></svg> 30 s</button>
+      </div>
+      <button class="btn" onclick="goVote()">Ir para votação <svg class="i"><use href="#i-arrow"/></svg></button>
+    </div>
   </section>
 
   <!-- VOTAÇÃO -->
-  <section class="screen" id="s-vote">
-    <h2>Votação</h2>
-    <p>Votem em voz alta. Toque em quem o grupo escolheu como impostor.</p>
-    <div class="vote-list" id="vote-list"></div>
-    <div class="grow"></div>
-    <button class="btn danger" id="vote-btn" onclick="confirmVote()" disabled>Acusar</button>
+  <section class="screen" id="s-vote" aria-label="Votação">
+    <div class="bar">
+      <button class="back" onclick="go('s-talk')" aria-label="Voltar para as pistas"><svg class="i"><use href="#i-back"/></svg></button>
+      <span class="code case-ref"></span>
+    </div>
+    <h2>Quem é o impostor?</h2>
+    <p class="lede">Votem em voz alta. Depois toquem em quem a maioria acusou.</p>
+    <div class="notice" id="vote-notice"></div>
+    <div class="suspects" id="vote-list"></div>
+    <div class="foot">
+      <button class="btn alarm" id="vote-btn" onclick="confirmVote()" disabled>Acusar <svg class="i"><use href="#i-arrow"/></svg></button>
+    </div>
   </section>
 
-  <!-- CHANCE DO IMPOSTOR -->
-  <section class="screen" id="s-guess">
-    <div class="grow"></div>
-    <div class="center">
-      <div class="result-emoji">🎯</div>
-      <h2 id="guess-name"></h2>
-      <p style="margin-top:10px">Última chance: o impostor (ou os impostores, juntos) fala em voz alta qual acha que é a palavra.</p>
+  <!-- ÚLTIMA CHANCE -->
+  <section class="screen" id="s-guess" aria-label="Última chance">
+    <div class="bar"><span></span><span class="code" style="color:var(--amber-deep)"><span class="case-ref"></span> · Detido</span></div>
+    <div class="verdict"><div class="stamp alarm" id="guess-stamp">Pego!</div></div>
+    <h2 style="text-align:center;margin-top:18px" id="guess-name"></h2>
+    <p class="lede" style="text-align:center;margin:12px auto 0">Última chance: o impostor diz em voz alta qual acha que é a palavra secreta.</p>
+    <div class="foot">
+      <button class="btn" onclick="finish('caught')">Errou a palavra <svg class="i"><use href="#i-x"/></svg></button>
+      <button class="btn line" onclick="finish('stolen')">Acertou a palavra <svg class="i"><use href="#i-check"/></svg></button>
     </div>
-    <div class="grow"></div>
-    <button class="btn secondary" onclick="finish('caught')">Errou a palavra</button>
-    <button class="btn danger" onclick="finish('stolen')">Acertou a palavra</button>
   </section>
 
-  <!-- RESULTADO -->
-  <section class="screen" id="s-result">
-    <div class="center">
-      <div class="result-emoji" id="result-emoji"></div>
-      <h2 id="result-title"></h2>
-      <p id="result-text" style="margin-top:8px"></p>
+  <!-- VEREDITO -->
+  <section class="screen" id="s-result" aria-label="Resultado">
+    <div class="bar"><span class="code">Caso <b id="result-case"></b></span><span class="code">Encerrado</span></div>
+    <div class="verdict">
+      <div class="stamp" id="result-stamp"></div>
+      <p id="result-text"></p>
     </div>
-    <div class="panel center">
-      <h3>A palavra era</h3>
-      <div class="secret" id="result-word" style="font-size:32px"></div>
-      <p style="margin-top:12px">Impostor: <b id="result-impostors" style="color:var(--danger)"></b></p>
+    <div class="record">
+      <div class="r"><span class="k">Palavra</span><span class="v word" id="result-word"></span></div>
+      <div class="r"><span class="k">Arquivo</span><span class="v" id="result-cat"></span></div>
+      <div class="r"><span class="k" id="result-imp-k">Impostor</span><span class="v amber" id="result-impostors"></span></div>
     </div>
-    <div class="panel">
-      <h3>Placar</h3>
-      <div id="scoreboard"></div>
+    <div class="field" style="margin-top:28px">
+      <div class="field-head"><span class="field-title">Placar</span><button class="code" onclick="resetScores()" style="padding:6px 0">Zerar</button></div>
+      <div class="ledger" style="margin-top:0" id="scoreboard"></div>
     </div>
-    <div class="grow"></div>
-    <button class="btn" onclick="startRound()">Próxima rodada</button>
-    <button class="btn secondary" onclick="go('s-setup')">Mudar jogadores</button>
+    <div class="foot">
+      <button class="btn" onclick="startRound()">Próxima rodada <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn line" onclick="go('s-setup')">Ajustar operação</button>
+    </div>
   </section>
 
 </div>
 
-<script>
-const CATEGORIES = {
-  "Comidas": ["Pizza","Lasanha","Feijoada","Brigadeiro","Coxinha","Pastel","Sushi","Hambúrguer","Pipoca","Açaí","Pão de queijo","Churrasco","Tapioca","Sorvete","Panqueca","Macarrão","Omelete","Bolo de cenoura","Cachorro-quente","Salada","Estrogonofe","Mandioca","Pudim","Chocolate","Torrada"],
-  "Lugares": ["Praia","Hospital","Escola","Aeroporto","Cinema","Supermercado","Academia","Biblioteca","Farmácia","Padaria","Estádio","Zoológico","Shopping","Igreja","Delegacia","Parque de diversões","Museu","Fazenda","Restaurante","Rodoviária","Hotel","Piscina","Cemitério","Circo","Floresta"],
-  "Animais": ["Cachorro","Gato","Elefante","Girafa","Tubarão","Pinguim","Leão","Macaco","Cobra","Jacaré","Coruja","Papagaio","Tartaruga","Cavalo","Vaca","Golfinho","Formiga","Abelha","Sapo","Urso","Canguru","Polvo","Galinha","Morcego","Capivara"],
-  "Objetos": ["Guarda-chuva","Celular","Tesoura","Espelho","Relógio","Mochila","Travesseiro","Óculos","Chave","Escova de dentes","Vela","Martelo","Garrafa","Controle remoto","Lanterna","Cadeira","Geladeira","Ventilador","Bola","Caneta","Panela","Carteira","Fone de ouvido","Toalha","Escada"],
-  "Profissões": ["Médico","Bombeiro","Professor","Cozinheiro","Policial","Dentista","Piloto","Jogador de futebol","Cabeleireiro","Pedreiro","Advogado","Motorista de ônibus","Veterinário","Astronauta","Mágico","Fotógrafo","Padeiro","Enfermeiro","Carteiro","Palhaço","Cantor","Jardineiro","Mecânico","Juiz","Programador"],
-  "Esportes": ["Futebol","Vôlei","Basquete","Natação","Tênis","Skate","Surfe","Boxe","Judô","Ciclismo","Corrida","Xadrez","Golfe","Handebol","Futsal","Capoeira","Escalada","Ginástica","Pingue-pongue","Boliche","Balé","Karatê","Hipismo","Esgrima","Patinação"],
-  "Coisas de casa": ["Sofá","Cama","Chuveiro","Fogão","Micro-ondas","Tapete","Cortina","Janela","Porta","Varal","Armário","Pia","Vaso sanitário","Lâmpada","Televisão","Máquina de lavar","Mesa","Ferro de passar","Vassoura","Travesseiro","Banheira","Prateleira","Campainha","Quintal","Garagem"],
-  "Transportes": ["Avião","Bicicleta","Ônibus","Trem","Metrô","Navio","Helicóptero","Moto","Carro","Patinete","Caminhão","Barco","Foguete","Balão","Táxi","Ambulância","Submarino","Teleférico","Jet ski","Trator","Canoa","Carroça","Skate","Lancha","Avião de papel"],
-  "Festas e datas": ["Natal","Carnaval","Ano-novo","Festa junina","Páscoa","Aniversário","Casamento","Halloween","Dia das mães","Formatura","Chá de bebê","Churrasco de domingo","Réveillon na praia","Dia dos namorados","Copa do mundo","Festa do pijama","Amigo secreto","Show de rock","Festa à fantasia","Batizado","Festa surpresa","Dia das crianças","Quermesse","Baile de máscaras","Viagem de férias"]
-};
+<!-- lacre: borda serrilhada + fechadura -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="seal" viewBox="0 0 120 120">
+      <path id="seal-edge" fill="currentColor"/>
+      <circle cx="60" cy="60" r="41" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.2"/>
+      <circle cx="60" cy="60" r="35" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="1" stroke-dasharray="2 3"/>
+      <path d="M60 41a9 9 0 0 1 5 16.5L68 79H52l3-21.5A9 9 0 0 1 60 41z" fill="#fff" fill-opacity=".92"/>
+    </symbol>
+  </defs>
+</svg>
 
-const STORE_KEY = "impostor-config-v1";
-const state = {
-  players: [],
-  impostors: 1,
-  time: 180,
-  hint: true,
-  cats: Object.keys(CATEGORIES),
-  scores: {},
-  round: null,
-  usedWords: []
+<script src="words.js"></script>
+<script>
+/* ---------- Ícones das categorias (desenhados à mão, traço 1.6) ---------- */
+const GLYPHS = {
+  comidas: '<circle cx="14.5" cy="12" r="6.5"/><circle cx="14.5" cy="12" r="3"/><path d="M4 3v6M2.5 3v4a1.5 1.5 0 0 0 3 0V3M4 9v12"/>',
+  hortifruti: '<path d="M12 7c-2-1.5-6-1-6.5 3S7.5 20 10 20c1 0 1.3-.5 2-.5s1 .5 2 .5c2.5 0 5-6 4.5-10S14 5.5 12 7z"/><path d="M12 7c0-2 1-3.5 3-4"/>',
+  doces: '<path d="M7.5 11a4.5 4.5 0 0 1 9 0"/><path d="M7 11h10l-5 10z"/><path d="M9.5 14.5h5"/>',
+  animais: '<circle cx="12" cy="16" r="3.5"/><circle cx="6.5" cy="10.5" r="1.8"/><circle cx="17.5" cy="10.5" r="1.8"/><circle cx="9.5" cy="5.5" r="1.8"/><circle cx="14.5" cy="5.5" r="1.8"/>',
+  lugares: '<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  profissoes: '<rect x="3" y="7.5" width="18" height="12" rx="1.5"/><path d="M9 7.5V5h6v2.5M3 12.5h18"/>',
+  objetos: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15.5 12v2"/>',
+  casa: '<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',
+  esportes: '<circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2.5 3 8.5 0 11M18.5 6.5c-3 2.5-3 8.5 0 11"/>',
+  futebol: '<circle cx="12" cy="12" r="8.5"/><path d="M12 8l3 2.2-1.1 3.6h-3.8L9 10.2z"/><path d="M12 8V3.5M15 10.2l4-1.5M13.9 13.8l2.6 3.6M10.1 13.8l-2.6 3.6M9 10.2L5 8.7"/>',
+  cinema: '<rect x="3.5" y="9" width="17" height="11" rx="1"/><path d="M3.5 9L19 4.5l.8 2.9M8.2 7.6l2.3 2.4M12.7 6.3l2.3 2.4"/>',
+  games: '<path d="M7 8h10a4 4 0 0 1 4 4.5l-.6 3.5a2.3 2.3 0 0 1-4 1L15 15H9l-1.4 2a2.3 2.3 0 0 1-4-1L3 12.5A4 4 0 0 1 7 8z"/><path d="M7.5 11v3M6 12.5h3M15.5 11.5h.01M17.5 13.5h.01"/>',
+  brasil: '<rect x="2.5" y="5" width="19" height="14" rx="1"/><path d="M12 7.5l7 4.5-7 4.5L5 12z"/><circle cx="12" cy="12" r="2.3"/>',
+  mundo: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>',
+  corpo: '<circle cx="12" cy="5" r="2.2"/><path d="M5 9h14M12 9v5.5M12 14.5L8.5 21M12 14.5l3.5 6.5"/>',
+  natureza: '<path d="M2.5 19L9 9l4 6 2.5-3.5L21.5 19z"/><circle cx="17" cy="6" r="2"/>',
+  transportes: '<path d="M21 3L3 10.5l7 2.5 2.5 7z"/><path d="M10 13L21 3"/>',
+  roupas: '<path d="M8.5 3.5L3 6.5l2 4 2-1V20h10V9.5l2 1 2-4-5.5-3c-.5 1.5-1.8 2.5-3.5 2.5S9 5 8.5 3.5z"/>',
+  musica: '<path d="M9 18V5.5l11-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+  escola: '<path d="M15.5 4.5l4 4-11 11h-4v-4z"/><path d="M13 7l4 4"/>',
+  tecnologia: '<rect x="6.5" y="6.5" width="11" height="11" rx="1"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9.5 3v3.5M14.5 3v3.5M9.5 17.5V21M14.5 17.5V21M3 9.5h3.5M3 14.5h3.5M17.5 9.5H21M17.5 14.5H21"/>',
+  festas: '<path d="M12 15c-3.3 0-5.5-3-5.5-6a5.5 5.5 0 0 1 11 0c0 3-2.2 6-5.5 6z"/><path d="M11 15l-.8 1.5h3.6L13 15M12 16.5c0 2-2 2.5-2 4.5"/>',
+  personagens: '<path d="M3 7c3-1 6-1 9 .5C15 6 18 6 21 7c0 6-3 10-5.5 10-1.6 0-2.4-2-3.5-2s-1.9 2-3.5 2C6 17 3 13 3 7z"/><path d="M7 10.5c.8-.6 2-.6 2.8 0M14.2 10.5c.8-.6 2-.6 2.8 0"/>',
+  fantasia: '<circle cx="12" cy="12" r="5.5"/><path d="M6.8 14.6C3.6 16.6 2 18.6 2.7 19.6c1.2 1.6 7.2-.8 13.3-5.3S21.6 6 20.4 4.4c-.7-1-3-.4-5.8 1.2"/>',
+  acoes: '<path d="M13.5 2.5L5 13.5h6l-1 8 8.5-11h-6z"/>',
+  familia: '<circle cx="8.5" cy="7" r="2.8"/><circle cx="16.5" cy="8.5" r="2.2"/><path d="M3 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6M14 14.3c.8-.3 1.6-.5 2.5-.5 2.5 0 4.5 2.2 4.5 5"/>',
+  cozinha: '<path d="M4.5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M16.5 10.5h1.5a2.5 2.5 0 0 1 0 5h-1.8M8 3.5c-.8 1 .8 2 0 3M12 3.5c-.8 1 .8 2 0 3"/>'
 };
+const glyph = (id, cls = "i") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${GLYPHS[id] || ""}</svg>`;
+
+// borda serrilhada do lacre (gerada uma vez)
+(function sealEdge() {
+  const n = 28, R = 56, r = 51, pts = [];
+  for (let i = 0; i < n * 2; i++) {
+    const a = (Math.PI * i) / n, rad = i % 2 ? r : R;
+    pts.push((60 + rad * Math.cos(a)).toFixed(2) + " " + (60 + rad * Math.sin(a)).toFixed(2));
+  }
+  document.getElementById("seal-edge").setAttribute("d", "M" + pts.join("L") + "Z");
+})();
+
+/* ---------- Estado ---------- */
+const STORE_KEY = "impostor-config-v2";
+const CAT_BY_ID = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+const ALL_IDS = CATEGORIES.map(c => c.id);
+const state = { players: [], impostors: 1, time: 180, hint: true, cats: ALL_IDS.slice(), scores: {}, used: {}, caseNo: 0, round: null };
 
 function load() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+    const old = JSON.parse(localStorage.getItem("impostor-config-v1") || "null");
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null") || (old && { players: old.players, impostors: old.impostors, time: old.time, hint: old.hint, scores: old.scores }) || {};
     Object.assign(state, saved);
-    state.cats = state.cats.filter(c => CATEGORIES[c]);
-    if (!state.cats.length) state.cats = Object.keys(CATEGORIES);
   } catch (e) {}
+  state.cats = (state.cats || []).filter(id => CAT_BY_ID[id]);
+  if (!state.cats.length) state.cats = ALL_IDS.slice();
+  if (!state.caseNo) state.caseNo = 100 + Math.floor(Math.random() * 800);
 }
 function save() {
-  const { players, impostors, time, hint, cats, scores } = state;
-  localStorage.setItem(STORE_KEY, JSON.stringify({ players, impostors, time, hint, cats, scores }));
+  const { players, impostors, time, hint, cats, scores, used, caseNo } = state;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ players, impostors, time, hint, cats, scores, used, caseNo })); } catch (e) {}
 }
 
 const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const fmt = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+const num = n => n.toLocaleString("pt-BR");
+const pad2 = n => String(n).padStart(2, "0");
+const maxImpostors = () => Math.max(1, Math.floor((state.players.length - 1) / 2));
+const caseLabel = () => "Nº " + String(state.caseNo).padStart(4, "0");
+const vibrate = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+
 function go(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
   window.scrollTo(0, 0);
   if (id === "s-setup") renderSetup();
+  if (id === "s-files") renderFiles();
+  if (id === "s-home") renderHome();
+  document.querySelectorAll(".case-ref").forEach(el => el.textContent = "Caso " + caseLabel());
+  fitLines($(id));
 }
-function esc(s) { return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
-function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
-function maxImpostors() { return Math.max(1, Math.floor((state.players.length - 1) / 2)); }
 
-/* ---------- Configuração ---------- */
+/* ---------- Capa ---------- */
+function renderHome() {
+  $("case-no").textContent = caseLabel();
+  $("cover-facts").innerHTML = `<b>${CATEGORIES.length}</b> arquivos · <b>${num(CATEGORIES.reduce((n, c) => n + c.words.length, 0))}</b> palavras`;
+}
+
+/* ---------- Operação ---------- */
 function renderSetup() {
-  $("player-count").textContent = state.players.length;
-  $("player-list").innerHTML = state.players.map((p, i) =>
-    `<div class="player-row"><span>${esc(p)}</span><button class="icon-btn" onclick="removePlayer(${i})" aria-label="Remover">✕</button></div>`
-  ).join("");
+  const n = state.players.length;
+  $("player-count").textContent = n;
+  $("player-list").innerHTML = n
+    ? state.players.map((p, i) => `<div class="agent"><span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>
+        <button class="rm" onclick="removePlayer(${i})" aria-label="Remover ${esc(p)}"><svg class="i"><use href="#i-x"/></svg></button></div>`).join("")
+    : `<p class="empty-note">Ninguém na mesa ainda. Digite o primeiro nome abaixo.</p>`;
+
   state.impostors = Math.min(state.impostors, maxImpostors());
   $("impostor-count").textContent = state.impostors;
+  $("imp-minus").disabled = state.impostors <= 1;
+  $("imp-plus").disabled = state.impostors >= maxImpostors();
+  $("imp-help").textContent = n < 3 ? "Precisa de 3 jogadores ou mais" : `Até ${maxImpostors()} com essa turma`;
   $("time-label").textContent = fmt(state.time);
-  $("hint-switch").classList.toggle("on", state.hint);
-  $("category-list").innerHTML = Object.keys(CATEGORIES).map(c =>
-    `<button class="chip ${state.cats.includes(c) ? "on" : ""}" onclick="toggleCat('${c}')">${c}</button>`
-  ).join("");
-  const ok = state.players.length >= 3 && state.cats.length > 0;
-  $("start-btn").disabled = !ok;
-  $("start-btn").textContent = state.players.length < 3 ? `Faltam ${3 - state.players.length} jogador(es)` : "Começar";
+  $("hint-switch").setAttribute("aria-checked", state.hint);
+
+  const words = state.cats.reduce((t, id) => t + CAT_BY_ID[id].words.length, 0);
+  $("files-summary").innerHTML = `<b>${state.cats.length}</b> de ${CATEGORIES.length} · ${num(words)} palavras`;
+  $("glyph-strip").innerHTML = state.cats.slice(0, 12).map(id => glyph(id)).join("") + (state.cats.length > 12 ? `<span class="code">+${state.cats.length - 12}</span>` : "");
+
+  const btn = $("start-btn");
+  btn.disabled = n < 3 || !state.cats.length;
+  btn.firstChild.textContent = n < 3 ? `Faltam ${3 - n} jogador${3 - n > 1 ? "es" : ""} ` : !state.cats.length ? "Escolha um arquivo " : "Distribuir credenciais ";
 }
 function addPlayer(e) {
   e.preventDefault();
-  const input = $("player-input");
-  const name = input.value.trim();
+  const input = $("player-input"), name = input.value.trim().replace(/\s+/g, " ");
   if (!name) return;
-  if (state.players.some(p => p.toLowerCase() === name.toLowerCase())) { input.value = ""; return; }
-  state.players.push(name);
-  input.value = "";
-  save(); renderSetup();
-  input.focus();
+  if (state.players.some(p => p.toLowerCase() === name.toLowerCase())) { input.select(); return; }
+  state.players.push(name); input.value = "";
+  save(); renderSetup(); input.focus();
 }
 function removePlayer(i) { state.players.splice(i, 1); save(); renderSetup(); }
 function changeImpostors(d) { state.impostors = Math.min(maxImpostors(), Math.max(1, state.impostors + d)); save(); renderSetup(); }
 function changeTime(d) { state.time = Math.min(600, Math.max(30, state.time + d)); save(); renderSetup(); }
 function toggleHint() { state.hint = !state.hint; save(); renderSetup(); }
-function toggleCat(c) {
-  state.cats = state.cats.includes(c) ? state.cats.filter(x => x !== c) : [...state.cats, c];
-  save(); renderSetup();
+
+/* ---------- Arquivos ---------- */
+function renderFiles() {
+  const max = Math.max(...CATEGORIES.map(c => c.words.length)), min = Math.min(...CATEGORIES.map(c => c.words.length));
+  $("files").innerHTML = CATEGORIES.map((c, i) => {
+    const on = state.cats.includes(c.id);
+    const d = (5 + 7 * (c.words.length - min) / Math.max(1, max - min)).toFixed(1);
+    return `<button class="file" aria-pressed="${on}" onclick="toggleCat('${c.id}', this)">
+      <span class="top"><span class="id">A-${pad2(i + 1)}</span><span class="mark"><svg class="i"><use href="#i-check"/></svg></span></span>
+      <span class="gl">${glyph(c.id)}</span>
+      <span class="nm">${c.name}</span>
+      <span class="nt">${c.note}</span>
+      <span class="mag"><span class="dot" style="width:${d}px;height:${d}px"></span>${c.words.length}</span>
+    </button>`;
+  }).join("");
+  renderTally();
 }
+function renderTally() {
+  const words = state.cats.reduce((t, id) => t + CAT_BY_ID[id].words.length, 0);
+  $("tally-cats").innerHTML = `${state.cats.length}<span>/${CATEGORIES.length}</span>`;
+  $("tally-words").textContent = num(words);
+  $("files-done").disabled = !state.cats.length;
+  $("files-done").firstChild.textContent = state.cats.length ? "Confirmar arquivos " : "Escolha ao menos um ";
+}
+function toggleCat(id, el) {
+  const on = !state.cats.includes(id);
+  state.cats = on ? ALL_IDS.filter(x => x === id || state.cats.includes(x)) : state.cats.filter(x => x !== id);
+  el.setAttribute("aria-pressed", on);
+  save(); renderTally();
+}
+function setAllCats(on) { state.cats = on ? ALL_IDS.slice() : []; save(); renderFiles(); }
+function randomCats() { const pickIds = shuffle(ALL_IDS).slice(0, 5); state.cats = ALL_IDS.filter(x => pickIds.includes(x)); save(); renderFiles(); }
 
 /* ---------- Rodada ---------- */
+function drawWord() {
+  const cat = CAT_BY_ID[pick(state.cats)];
+  const used = state.used[cat.id] || [];
+  let pool = cat.words.filter(w => !used.includes(w));
+  if (!pool.length) { state.used[cat.id] = []; pool = cat.words; }
+  const word = pick(pool);
+  state.used[cat.id] = [...(state.used[cat.id] || []), word];
+  return { cat, word };
+}
 function startRound() {
-  if (state.players.length < 3) { go("s-setup"); return; }
-  const cat = pick(state.cats);
-  let options = CATEGORIES[cat].filter(w => !state.usedWords.includes(w));
-  if (!options.length) { state.usedWords = []; options = CATEGORIES[cat]; }
-  const word = pick(options);
-  state.usedWords.push(word);
-
-  const order = shuffle(state.players);
+  if (state.players.length < 3 || !state.cats.length) { go("s-setup"); return; }
+  const { cat, word } = drawWord();
   const impostors = shuffle(state.players).slice(0, Math.min(state.impostors, maxImpostors()));
-  // quem começa a falar nunca é impostor, pra ele não ser o primeiro sem pista nenhuma
-  const starters = state.players.filter(p => !impostors.includes(p));
-
-  state.round = { cat, word, order, impostors, idx: 0, first: pick(starters), out: [], selected: null };
+  // quem começa nunca é impostor: ele seria o único sem pista nenhuma
+  const crew = state.players.filter(p => !impostors.includes(p));
+  state.caseNo++;
+  state.round = { cat, word, impostors, order: shuffle(state.players), idx: 0, first: pick(crew), out: [], selected: null };
+  save();
   showPass();
 }
+function abortRound() {
+  clearInterval(timerId);
+  state.round = null;
+  go("s-setup");
+}
 function showPass() {
-  $("pass-name").textContent = state.round.order[state.round.idx];
+  const r = state.round, name = r.order[r.idx];
+  $("pass-name").textContent = name;
+  $("pass-name-small").textContent = name;
+  $("pass-step").textContent = pad2(r.idx + 1) + "/" + pad2(r.order.length);
+  resetHold();
   go("s-pass");
 }
+
+/* segurar o lacre */
+const HOLD_MS = 650, RING = 452.4;
+let holdStart = 0, holdRaf = 0;
+function resetHold() {
+  cancelAnimationFrame(holdRaf); holdStart = 0;
+  $("hold-prog").style.strokeDashoffset = RING;
+  $("hold").classList.remove("pressing");
+  $("hold-label").textContent = "Segure o lacre para abrir";
+}
+function holdTick(t) {
+  const p = Math.min(1, (t - holdStart) / HOLD_MS);
+  $("hold-prog").style.strokeDashoffset = RING * (1 - p);
+  if (p >= 1) { holdStart = 0; $("hold").classList.remove("pressing"); vibrate(30); showSecret(); return; }
+  holdRaf = requestAnimationFrame(holdTick);
+}
+function holdDown(e) {
+  if (e.button > 0) return;
+  e.preventDefault();
+  holdStart = performance.now();
+  $("hold").classList.add("pressing");
+  $("hold-label").textContent = "Continue segurando";
+  holdRaf = requestAnimationFrame(holdTick);
+}
+function holdUp() { if (holdStart) resetHold(); }
+const env = $("envelope");
+env.addEventListener("pointerdown", holdDown);
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => env.addEventListener(ev, holdUp));
+env.addEventListener("contextmenu", e => e.preventDefault());
+env.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") showSecret(); });
+env.tabIndex = 0;
+
 function showSecret() {
-  const r = state.round;
-  const name = r.order[r.idx];
-  const isImp = r.impostors.includes(name);
-  const card = $("secret-card");
-  card.className = "reveal-card " + (isImp ? "impostor" : "word");
-  $("secret-label").textContent = isImp ? name + ", você é o" : name + ", a palavra é";
-  $("secret-text").textContent = isImp ? "IMPOSTOR" : r.word;
-  const extra = $("secret-extra");
+  const r = state.round, name = r.order[r.idx], isImp = r.impostors.includes(name);
+  const cred = $("cred");
+  cred.classList.toggle("impostor", isImp);
+  $("cred-status").textContent = isImp ? "Acesso negado" : "Acesso liberado";
+  $("cred-step").textContent = caseLabel();
+  const others = r.impostors.length;
+  const meta = `<div class="cred-meta"><span class="k">Agente</span><span class="k">Credencial</span>
+      <span class="v">${esc(name)}</span><span class="v code" style="font-size:14px">${pad2(r.idx + 1)}/${pad2(r.order.length)}</span></div>`;
   if (isImp) {
-    extra.style.display = state.hint ? "" : "none";
-    extra.textContent = "Categoria: " + r.cat;
+    $("cred-body").innerHTML = meta + `
+      <div class="cred-word"><span class="k">Palavra secreta</span>
+        <div class="redact" aria-label="Palavra escondida"><span style="width:92%"></span><span style="width:64%"></span></div>
+        <div class="xl imp-title fit-line" data-max="96">Impostor</div></div>
+      <p class="cred-note">${state.hint ? `Pista: a palavra está no arquivo <b>${r.cat.name}</b>.` : "Sem pistas. Ouça os outros e disfarce."}${others > 1 ? ` Há <b>${others} impostores</b> nesta rodada.` : ""}</p>`;
   } else {
-    extra.style.display = "";
-    extra.textContent = r.impostors.length > 1 ? `Há ${r.impostors.length} impostores` : "Descubra quem não sabe a palavra";
+    $("cred-body").innerHTML = meta + `
+      <div class="cred-word"><span class="k">Palavra secreta</span><div class="word-fit" id="word-fit">${esc(r.word)}</div></div>
+      <p class="cred-note">Arquivo <b>${r.cat.name}</b>. ${others > 1 ? `Há <b>${others} impostores</b> na mesa.` : "Um de vocês não sabe a palavra."}</p>`;
   }
   go("s-secret");
+  if (!isImp) fitWord($("word-fit")); else fitLines($("cred"));
 }
+// ajusta a palavra para ocupar a largura do cartão sem quebrar no meio
+function fitWord(el) {
+  const box = el.parentElement, maxW = box.clientWidth, maxH = Math.max(120, box.clientHeight - 40);
+  let lo = 26, hi = 112;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    el.style.fontSize = mid + "px";
+    const fits = el.scrollWidth <= maxW && el.scrollHeight <= maxH && longestWordFits(el, maxW);
+    fits ? (lo = mid) : (hi = mid);
+  }
+  el.style.fontSize = lo + "px";
+}
+function longestWordFits(el, maxW) {
+  const probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;font:inherit;font-stretch:inherit;letter-spacing:inherit";
+  el.appendChild(probe);
+  let ok = true;
+  for (const w of el.textContent.split(/\s+/)) { probe.textContent = w; if (probe.offsetWidth > maxW) { ok = false; break; } }
+  probe.remove();
+  return ok;
+}
+// ajusta títulos de uma linha para ocupar toda a largura disponível
+function fitLines(root = document) {
+  root.querySelectorAll(".fit-line").forEach(el => {
+    if (!el.offsetParent) return;
+    const maxW = el.parentElement.clientWidth;
+    let lo = 20, hi = +el.dataset.max || 120;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; el.style.fontSize = mid + "px"; el.scrollWidth <= maxW ? (lo = mid) : (hi = mid); }
+    el.style.fontSize = lo + "px";
+  });
+}
+addEventListener("resize", () => fitLines());
+document.fonts && document.fonts.ready.then(() => fitLines());
+
 function hideSecret() {
   const r = state.round;
   r.idx++;
-  if (r.idx < r.order.length) showPass();
-  else startTalk();
+  r.idx < r.order.length ? showPass() : startTalk();
 }
 
-/* ---------- Conversa com cronômetro ---------- */
-let timerId = null, remaining = 0, paused = false;
+/* ---------- Pistas e cronômetro ---------- */
+let timerId = null, remaining = 0, total = 0, paused = false;
 function startTalk() {
   $("first-name").textContent = state.round.first;
-  remaining = state.time; paused = false;
-  $("pause-btn").textContent = "Pausar";
+  remaining = total = state.time; paused = false;
+  setPauseBtn();
   renderTimer();
-  clearInterval(timerId);
-  timerId = setInterval(() => {
-    if (paused) return;
-    remaining--;
-    renderTimer();
-    if (remaining <= 0) { clearInterval(timerId); beep(); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); }
-  }, 1000);
+  runTimer();
   go("s-talk");
 }
+function runTimer() {
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    if (paused || remaining <= 0) return;
+    remaining--; renderTimer();
+    if (remaining === 0) { beep(); vibrate([250, 120, 250]); }
+  }, 1000);
+}
 function renderTimer() {
-  const t = $("timer");
-  t.textContent = remaining > 0 ? fmt(remaining) : "Tempo!";
-  t.classList.toggle("low", remaining <= 10);
+  $("timer").textContent = fmt(Math.max(0, remaining));
+  $("timer-fill").style.transform = `scaleX(${Math.max(0, remaining) / Math.max(1, total)})`;
+  $("clock").classList.toggle("low", remaining <= 10);
+  $("timer-status").textContent = remaining <= 0 ? "Tempo esgotado. Hora de votar." : paused ? "Pausado" : "";
 }
-function togglePause() { paused = !paused; $("pause-btn").textContent = paused ? "Continuar" : "Pausar"; }
-function addTime() {
-  const restart = remaining <= 0;
-  remaining = Math.max(0, remaining) + 30; renderTimer();
-  if (restart) { clearInterval(timerId); timerId = setInterval(() => { if (paused) return; remaining--; renderTimer(); if (remaining <= 0) { clearInterval(timerId); beep(); } }, 1000); }
+function setPauseBtn() {
+  $("pause-btn").innerHTML = paused
+    ? '<svg class="i"><use href="#i-play"/></svg> Continuar'
+    : '<svg class="i"><use href="#i-pause"/></svg> Pausar';
 }
+function togglePause() { paused = !paused; setPauseBtn(); renderTimer(); }
+function addTime() { remaining = Math.max(0, remaining) + 30; total = Math.max(total, remaining); renderTimer(); }
 function beep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.35].forEach(t => {
+    [0, 0.32].forEach(t => {
       const o = ctx.createOscillator(), g = ctx.createGain();
-      o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
-      g.gain.setValueAtTime(0.3, ctx.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.3);
+      o.type = "sine"; o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.28);
       o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.3);
     });
   } catch (e) {}
@@ -448,34 +927,39 @@ function beep() {
 
 /* ---------- Votação ---------- */
 function goVote() {
-  clearInterval(timerId);
   state.round.selected = null;
+  $("vote-notice").classList.remove("on");
   renderVote();
   go("s-vote");
 }
 function renderVote() {
   const r = state.round;
-  $("vote-list").innerHTML = state.players.map((p, i) =>
-    `<button class="vote-btn ${r.selected === p ? "sel" : ""} ${r.out.includes(p) ? "out" : ""}" onclick="selectVote(${i})">${esc(p)}</button>`
-  ).join("");
-  $("vote-btn").disabled = !r.selected;
-  $("vote-btn").textContent = r.selected ? "Acusar " + r.selected : "Acusar";
+  $("vote-list").innerHTML = state.players.map((p, i) => {
+    const caught = r.out.includes(p), sel = r.selected === p;
+    return `<button class="suspect ${caught ? "caught" : ""}" aria-pressed="${sel}" onclick="selectVote(${i})" ${caught ? 'aria-disabled="true"' : ""}>
+      <span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>${caught ? '<span class="tag">Detido</span>' : sel ? '<span class="tag">Acusado</span>' : ""}</button>`;
+  }).join("");
+  const btn = $("vote-btn");
+  btn.disabled = !r.selected;
+  btn.firstChild.textContent = r.selected ? `Acusar ${r.selected} ` : "Toque em um suspeito ";
 }
-function selectVote(i) { state.round.selected = state.players[i]; renderVote(); }
+function selectVote(i) { const r = state.round, p = state.players[i]; if (r.out.includes(p)) return; r.selected = r.selected === p ? null : p; renderVote(); }
 function confirmVote() {
-  const r = state.round;
-  const who = r.selected;
+  const r = state.round, who = r.selected;
   if (!who) return;
   if (r.impostors.includes(who)) {
-    r.out.push(who);
-    const left = r.impostors.filter(p => !r.out.includes(p));
-    if (left.length) {
-      // ainda há impostores escondidos: continua a votação
-      alert(who + " era impostor! Mas ainda falta " + (left.length === 1 ? "1 impostor." : left.length + " impostores."));
-      r.selected = null; renderVote();
+    r.out.push(who); r.selected = null;
+    const left = r.impostors.filter(p => !r.out.includes(p)).length;
+    if (left) {
+      vibrate(40);
+      const n = $("vote-notice");
+      n.innerHTML = `<b>${esc(who)}</b> era impostor. Ainda falta${left > 1 ? "m" : ""} <b>${left}</b>. Votem de novo.`;
+      n.classList.remove("on"); void n.offsetWidth; n.classList.add("on");
+      renderVote();
       return;
     }
-    $("guess-name").textContent = r.impostors.length > 1 ? "Todos os impostores foram pegos!" : who + " era impostor!";
+    $("guess-name").textContent = r.impostors.length > 1 ? "Todos os impostores foram pegos" : `${who} era o impostor`;
+    $("guess-stamp").textContent = r.impostors.length > 1 ? "Todos pegos" : "Pego!";
     go("s-guess");
   } else {
     r.innocent = who;
@@ -483,65 +967,71 @@ function confirmVote() {
   }
 }
 
-/* ---------- Resultado e placar ---------- */
+/* ---------- Veredito e placar ---------- */
 function finish(outcome) {
   const r = state.round;
   const crew = state.players.filter(p => !r.impostors.includes(p));
-  const add = (list, pts) => list.forEach(p => state.scores[p] = (state.scores[p] || 0) + pts);
-  const impNames = r.impostors.join(" e ");
-
+  const deltas = {};
+  const add = (list, pts) => list.forEach(p => { state.scores[p] = (state.scores[p] || 0) + pts; deltas[p] = pts; });
+  const plural = r.impostors.length > 1;
+  const stamp = $("result-stamp");
   if (outcome === "caught") {
     add(crew, 1);
-    show("🎉", "O grupo venceu!", "O impostor foi pego e não acertou a palavra. +1 ponto para cada um do grupo.");
+    stamp.textContent = "Caso resolvido"; stamp.className = "stamp";
+    $("result-text").textContent = plural ? "Os impostores foram pegos e não acertaram a palavra. Cada agente do grupo ganha 1 ponto." : "O impostor foi pego e não acertou a palavra. Cada agente do grupo ganha 1 ponto.";
   } else if (outcome === "stolen") {
     add(r.impostors, 2);
-    show("😈", "O impostor roubou a vitória!", "Foi pego, mas acertou a palavra. +2 pontos para o impostor.");
+    stamp.textContent = "Palavra roubada"; stamp.className = "stamp alarm";
+    $("result-text").textContent = plural ? "Pegos, mas acertaram a palavra. 2 pontos para cada impostor." : "Pego, mas acertou a palavra. 2 pontos para o impostor.";
   } else {
     add(r.impostors, 3);
-    show("🕵️", "O impostor venceu!", `${r.innocent} era inocente. O impostor escapou e ganha +3 pontos.`);
+    stamp.textContent = plural ? "Impostores escaparam" : "Impostor escapou"; stamp.className = "stamp alarm";
+    $("result-text").textContent = `${r.innocent} era inocente. ${plural ? "Os impostores levam" : "O impostor leva"} 3 pontos.`;
   }
+  // reinicia o carimbo para a animação rodar de novo
+  stamp.style.animation = "none"; void stamp.offsetWidth; stamp.style.animation = "";
+  $("result-case").textContent = caseLabel();
   $("result-word").textContent = r.word;
-  $("result-impostors").textContent = impNames;
-  renderScores();
+  $("result-cat").textContent = r.cat.name;
+  $("result-imp-k").textContent = plural ? "Impostores" : "Impostor";
+  $("result-impostors").textContent = r.impostors.join(", ");
+  renderScores(deltas, r.impostors);
   save();
   go("s-result");
 }
-function show(emoji, title, text) {
-  $("result-emoji").textContent = emoji;
-  $("result-title").textContent = title;
-  $("result-text").textContent = text;
-}
-function renderScores() {
-  const rows = state.players.map(p => [p, state.scores[p] || 0]).sort((a, b) => b[1] - a[1]);
+function renderScores(deltas = {}, imps = []) {
+  const rows = state.players.map(p => [p, state.scores[p] || 0]).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const top = rows.length ? rows[0][1] : 0;
   $("scoreboard").innerHTML = rows.map(([p, s], i) =>
-    `<div class="score-row"><span>${i === 0 && s > 0 ? "👑 " : ""}${esc(p)}</span><b>${s}</b></div>`
-  ).join("") + `<button class="btn secondary" style="margin-top:12px;padding:12px;font-size:15px" onclick="resetScores()">Zerar placar</button>`;
+    `<div class="lr ${s > 0 && s === top ? "lead" : ""}"><span class="pos">${pad2(i + 1)}</span><span class="nm">${esc(p)}</span>
+      <span class="delta ${imps.includes(p) ? "amber" : ""}">${deltas[p] ? "+" + deltas[p] : ""}</span><span class="pts">${s}</span></div>`).join("");
 }
-function resetScores() { state.scores = {}; save(); renderScores(); }
+function resetScores() {
+  if (!confirm("Zerar o placar de todos os jogadores?")) return;
+  state.scores = {}; save(); renderScores();
+}
 
-// evita sair do jogo sem querer no meio da rodada
-window.addEventListener("beforeunload", e => { if (state.round && !$("s-result").classList.contains("active")) { e.preventDefault(); e.returnValue = ""; } });
+// evita fechar sem querer no meio de uma rodada
+window.addEventListener("beforeunload", e => {
+  if (state.round && !$("s-result").classList.contains("active")) { e.preventDefault(); e.returnValue = ""; }
+});
 
 /* ---------- Instalar como app ---------- */
 let installPrompt = null;
-const installed = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
-window.addEventListener("beforeinstallprompt", e => {
-  e.preventDefault();
-  installPrompt = e;
-  $("install-btn").style.display = "";
-});
-window.addEventListener("appinstalled", () => { $("install-btn").style.display = "none"; });
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installPrompt = e; $("install-btn").hidden = false; });
+window.addEventListener("appinstalled", () => { $("install-btn").hidden = true; });
 async function installApp() {
   if (!installPrompt) return;
-  installPrompt.prompt();
-  await installPrompt.userChoice;
-  installPrompt = null;
-  $("install-btn").style.display = "none";
+  installPrompt.prompt(); await installPrompt.userChoice;
+  installPrompt = null; $("install-btn").hidden = true;
 }
-if (!installed && /iphone|ipad|ipod/i.test(navigator.userAgent)) $("ios-hint").style.display = "";
+if (!standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) $("ios-hint").hidden = false;
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js");
 
 load();
+renderHome();
+fitLines();
 </script>
 </body>
 </html>
