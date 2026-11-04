@@ -1,4 +1,4 @@
-﻿// Guarda os arquivos do jogo no celular para ele abrir mesmo sem internet.
+// Guarda os arquivos do jogo no celular para ele abrir mesmo sem internet.
 // Ao mudar qualquer arquivo do jogo, aumente o nÃºmero da versÃ£o abaixo.
 const CACHE = "impostor-v18";
 const FILES = [
