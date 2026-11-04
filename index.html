@@ -144,6 +144,7 @@
   .btn:disabled { background: var(--paper-2); color: var(--ink-2); box-shadow: inset 0 0 0 1.5px var(--rule); opacity: 1; }
   .btn.line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
   .btn.alarm { background: var(--amber); color: #fff; }
+  .btn.alarm:disabled, .btn.line:disabled { background: var(--paper-2); color: var(--ink-2); box-shadow: inset 0 0 0 1.5px var(--rule); }
   .btn.quiet { min-height: 48px; background: transparent; color: var(--ink-2); justify-content: center; font-size: 13px; }
   .btn .i { width: 20px; height: 20px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -439,6 +440,95 @@
   @keyframes press-seal { from { opacity: 0; transform: rotate(12deg) scale(1.6); } }
   .cover-title { position: relative; }
 
+
+  /* vez de falar */
+  .first { gap: 10px; }
+  .spk-next { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: 4px;
+    background: var(--ink); color: var(--sheet); font-stretch: 112%; font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase;
+    transition: transform .15s var(--ease), background .2s; }
+  .spk-next .i { width: 18px; height: 18px; stroke-width: 2.2; }
+  .spk-next:active { transform: scale(.95); }
+  .spk-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 2px; }
+  .spk { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px 0 3px; border-radius: 4px;
+    background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); font-size: 14px; font-weight: 600; color: var(--ink);
+    transition: box-shadow .25s, background .25s, opacity .25s, transform .15s var(--ease); max-width: 100%; }
+  .spk .av { width: 30px; height: 30px; font-size: 11.5px; }
+  .spk span.nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 9.5em; }
+  .spk.done { opacity: .5; }
+  .spk.done::after { content: ""; position: absolute; left: 21px; top: -5px; width: 15px; height: 15px; border-radius: 50%;
+    background: var(--sky-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/11px no-repeat; }
+  .spk.now { box-shadow: inset 0 0 0 2px var(--sky-deep); background: var(--sky-wash); opacity: 1; }
+  .spk:active { transform: scale(.95); }
+  .first .who .v { animation: rise .35s var(--ease); display: block; }
+  .who-txt { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+  .who-txt .v { overflow-wrap: anywhere; }
+  .clock { min-height: 190px; }
+
+  /* contagem de votos */
+  .vote-tally { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding: 8px 0; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .vote-tally button { padding: 8px 0 8px 12px; color: var(--ink-2); }
+  .vote-tally button:disabled { opacity: .35; }
+  .suspects { margin-top: 14px; }
+  .suspect { padding-right: 8px; }
+  .vc { flex-shrink: 0; display: flex; align-items: center; gap: 2px; }
+  .vc .pips { display: flex; gap: 3px; margin-right: 6px; }
+  .vc .pips i { width: 6px; height: 16px; border-radius: 1px; background: var(--sky-deep); animation: pip .3s var(--ease) both; }
+  @keyframes pip { from { transform: scaleY(0); } }
+  .vc b { font-family: var(--mono); font-size: 17px; font-weight: 600; min-width: 18px; text-align: right; font-variant-numeric: tabular-nums; }
+  .vc .minus { width: 36px; height: 36px; margin-left: 4px; display: grid; place-items: center; border-radius: 4px; color: var(--ink-3); }
+  .vc .minus .i { width: 18px; height: 18px; }
+  .vc .minus:active { background: var(--paper-2); }
+  .suspect[aria-pressed="true"] .vc .pips i { background: var(--amber); }
+  .suspect[aria-pressed="true"] .vc b { color: var(--amber-deep); }
+  .suspect.tied { box-shadow: inset 0 0 0 2px var(--ink-3); }
+
+  /* quem já viu o segredo */
+  .seen { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .seen .av { position: relative; width: 30px; height: 30px; font-size: 11.5px; transition: opacity .3s, transform .3s var(--ease); }
+  .seen .av.done { opacity: .45; }
+  .seen .av.done::after { content: ""; position: absolute; right: -4px; top: -4px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--sky-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px no-repeat; }
+  .seen .av.now { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--sky-deep); transform: translateY(-2px); }
+  .envelope { margin-top: 16px; }
+  .hold:not(.pressing) .seal { animation: breathe 2.6s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(1.05); } }
+  .hold:not(.pressing) .ring .track { animation: track 2.6s ease-in-out infinite; }
+  @keyframes track { 50% { stroke: var(--sky); } }
+
+  /* conferir a palavra */
+  .peek { position: relative; display: block; width: 100%; margin-top: 26px; height: 92px; border-radius: 4px; overflow: hidden;
+    background: var(--sheet); box-shadow: inset 0 0 0 1.5px var(--rule); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .peek-cover { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 2;
+    background: repeating-linear-gradient(-45deg, var(--paper-2) 0 10px, var(--paper) 10px 20px); color: var(--ink-2);
+    font-stretch: 112%; font-weight: 700; font-size: 14px; letter-spacing: .03em; text-transform: uppercase; transition: transform .45s var(--ease); }
+  .peek-bar { position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; background: var(--sky-deep); transform-origin: left; transform: scaleX(0); }
+  .peek-word { position: absolute; inset: 0; display: grid; place-items: center; padding: 0 16px; font-stretch: 125%; font-weight: 900; font-size: 26px;
+    text-transform: uppercase; letter-spacing: -.01em; line-height: 1; color: var(--ink); text-align: center; }
+  .peek.open .peek-cover { transform: translateY(-101%); }
+  .peek.open { box-shadow: inset 0 0 0 2px var(--sky-deep); }
+
+  /* exemplos de uma categoria */
+  .file.holding { transform: scale(.97); box-shadow: inset 0 0 0 2px var(--sky-deep); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+  .examples span { padding: 8px 12px; border-radius: 3px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); font-weight: 600; font-size: 15px;
+    animation: rise .35s var(--ease) both; animation-delay: calc(var(--i) * 40ms); }
+  .sheet .ex-glyph { display: flex; align-items: center; gap: 10px; }
+  .sheet .ex-glyph .i { width: 28px; height: 28px; color: var(--sky-ink); }
+
+  /* jogadores recentes e resumo */
+  .recent { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+  .recent:empty { display: none; }
+  .recent .code { margin-right: 2px; }
+  .recent button { display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 18px;
+    box-shadow: inset 0 0 0 1.5px var(--rule); font-size: 14px; font-weight: 600; color: var(--ink); transition: transform .15s var(--ease), background .2s; }
+  .recent button .i { width: 16px; height: 16px; color: var(--sky-ink); }
+  .recent button:active { transform: scale(.94); background: var(--sky-wash); }
+  .summary { text-align: center; margin: 0 0 2px; line-height: 1.6; }
+  .summary b { color: var(--ink); }
+
+  .steps.stagger > li { animation-delay: calc(.1s + var(--i, 0) * 60ms); }
+  @media (hover: hover) { .recent button:hover, .spk:hover { background: var(--paper-2); } .peek:hover .peek-cover { color: var(--ink); } }
+
   /* painel de confirmação */
   .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: grid; align-items: end; justify-items: center;
     background: rgba(15,36,53,.42); opacity: 0; visibility: hidden; transition: opacity .22s var(--ease), visibility 0s .22s; }
@@ -530,6 +620,7 @@
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
     <symbol id="i-redo" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4.5H9"/></symbol>
     <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01"/></symbol>
@@ -582,14 +673,14 @@
       <span class="code case-ref"></span>
     </div>
     <h2>Como jogar</h2>
-    <ol class="steps">
-      <li><span>Escrevam o nome de todos os jogadores (<b>3 ou mais</b>).</span></li>
-      <li><span>Passem o celular de mão em mão. Cada um <b>segura o selo</b> e vê seu segredo sem ninguém olhar.</span></li>
-      <li><span>Todos recebem a <b>mesma palavra</b>. Só o impostor não recebe.</span></li>
-      <li><span>Cada um diz <b>uma palavra de dica</b>. Se for óbvia demais, o impostor descobre.</span></li>
-      <li><span>O impostor disfarça e tenta adivinhar a palavra pelas dicas.</span></li>
-      <li><span>No fim, todos <b>votam em voz alta</b> e marcam o escolhido no celular.</span></li>
-      <li><span>Se o impostor for pego, ainda pode <b>acertar a palavra</b> e vencer.</span></li>
+    <ol class="steps stagger">
+      <li style="--i:1"><span>Escrevam o nome de todos os jogadores (<b>3 ou mais</b>).</span></li>
+      <li style="--i:2"><span>Passem o celular de mão em mão. Cada um <b>segura o selo</b> e vê seu segredo sem ninguém olhar.</span></li>
+      <li style="--i:3"><span>Todos recebem a <b>mesma palavra</b>. Só o impostor não recebe.</span></li>
+      <li style="--i:4"><span>Cada um diz <b>uma palavra de dica</b>. Se for óbvia demais, o impostor descobre.</span></li>
+      <li style="--i:5"><span>O impostor disfarça e tenta adivinhar a palavra pelas dicas.</span></li>
+      <li style="--i:6"><span>No fim, todos <b>votam em voz alta</b> e marcam o escolhido no celular.</span></li>
+      <li style="--i:7"><span>Se o impostor for pego, ainda pode <b>acertar a palavra</b> e vencer.</span></li>
     </ol>
     <div class="field" style="margin-top:14px">
       <div class="field-head"><span class="field-title">Pontos</span></div>
@@ -624,6 +715,7 @@
         <button type="submit" aria-label="Adicionar jogador"><svg class="i"><use href="#i-plus"/></svg></button>
       </form>
       <p class="field-msg" id="player-msg" aria-live="polite"></p>
+      <div class="recent" id="recent"></div>
     </div>
 
     <div class="field">
@@ -670,6 +762,7 @@
     </div>
 
     <div class="foot">
+      <p class="summary code" id="summary"></p>
       <button class="btn" id="start-btn" onclick="startRound()">Começar <svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
   </section>
@@ -681,7 +774,7 @@
       <span class="code case-ref"></span>
     </div>
     <h2>Categorias</h2>
-    <p class="lede">Toque para ligar ou desligar. A palavra secreta sai de uma das ligadas.</p>
+    <p class="lede">Toque para ligar ou desligar. <b>Segure</b> uma pasta para ver exemplos de palavras.</p>
     <div class="tally">
       <span class="big" id="tally-cats">0<span>/0</span></span>
       <span class="code"><b id="tally-words">0</b> palavras em jogo</span>
@@ -706,6 +799,7 @@
     <div class="progress" aria-label="Etapa 1 de 4"><span class="seg now"><i></i>Segredo</span><span class="seg"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <p class="handoff-to">Entregue o celular para</p>
     <h2 class="handoff-name" id="pass-name"></h2>
+    <div class="seen" id="seen" aria-label="Quem já viu o segredo"></div>
     <div class="envelope" id="envelope">
       <svg class="flap" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L50 46 L100 0"/></svg>
       <div class="hold" id="hold">
@@ -736,13 +830,17 @@
     </div>
     <div class="progress" aria-label="Etapa 2 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg now"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <h2>Hora das dicas</h2>
-    <div class="first"><span class="k">Começa</span><span class="who" id="first-who"></span></div>
+    <div class="first">
+      <span class="who" id="first-who"></span>
+      <button class="spk-next" id="spk-next" onclick="nextSpeaker()" aria-label="Já falou, passar a vez"><svg class="i"><use href="#i-check"/></svg>Falou</button>
+    </div>
+    <div class="spk-list" id="spk-list" aria-label="Ordem de quem fala"></div>
     <div class="clock" id="clock">
       <div class="t" id="timer">3:00</div>
       <div class="track"><div class="fill" id="timer-fill"></div></div>
       <div class="status" id="timer-status" aria-live="polite"></div>
     </div>
-    <p class="talk-help">Cada um diz uma palavra de dica, na ordem da roda. Depois, conversem.</p>
+    <p class="talk-help" id="talk-help" aria-live="polite">Cada um diz uma palavra de dica. Toque em <b>Falou</b> para passar a vez.</p>
     <div class="foot">
       <div class="row2">
         <button class="btn line" id="pause-btn" onclick="togglePause()"><svg class="i"><use href="#i-pause"/></svg> Pausar</button>
@@ -760,7 +858,8 @@
     </div>
     <div class="progress" aria-label="Etapa 3 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg done"><i></i>Dicas</span><span class="seg now"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <h2>Quem é o impostor?</h2>
-    <p class="lede">Votem em voz alta e toquem no mais votado.</p>
+    <p class="lede">Cada um diz seu voto. Toquem no nome para somar <b>um voto</b>.</p>
+    <div class="vote-tally"><span class="code" id="vote-count">0 de 0 votos</span><button class="code" id="vote-reset" onclick="resetVotes()">Zerar votos</button></div>
     <div class="notice" id="vote-notice" aria-live="polite"></div>
     <div class="suspects" id="vote-list"></div>
     <div class="foot">
@@ -775,6 +874,10 @@
     <div class="verdict"><div class="stamp alarm" id="guess-stamp">Pego!</div></div>
     <h2 style="text-align:center;margin-top:18px" id="guess-name"></h2>
     <p class="lede" style="text-align:center;margin:12px auto 0">Última chance: o impostor fala qual acha que é a palavra.</p>
+    <button class="peek" id="peek" aria-label="Segure para mostrar a palavra secreta">
+      <span class="peek-cover"><svg class="i"><use href="#i-eye"/></svg><span id="peek-label">Segure para conferir a palavra</span><i class="peek-bar" id="peek-bar"></i></span>
+      <span class="peek-word" id="peek-word"></span>
+    </button>
     <div class="foot">
       <button class="btn" onclick="finish('caught')">Errou a palavra <svg class="i"><use href="#i-x"/></svg></button>
       <button class="btn line" onclick="finish('stolen')">Acertou a palavra <svg class="i"><use href="#i-check"/></svg></button>
@@ -897,7 +1000,7 @@ const glyph = (id, cls = "i") => `<svg class="${cls}" viewBox="0 0 24 24" aria-h
 const STORE_KEY = "impostor-config-v2";
 const CAT_BY_ID = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 const ALL_IDS = CATEGORIES.map(c => c.id);
-const state = { players: [], impostors: 1, time: 180, goal: 10, hint: true, cats: ALL_IDS.slice(), scores: {}, used: {}, caseNo: 0, round: null };
+const state = { players: [], recent: [], impostors: 1, time: 180, goal: 10, hint: true, cats: ALL_IDS.slice(), scores: {}, used: {}, caseNo: 0, round: null };
 
 function load() {
   try {
@@ -910,8 +1013,8 @@ function load() {
   if (!state.caseNo) state.caseNo = 100 + Math.floor(Math.random() * 800);
 }
 function save() {
-  const { players, impostors, time, goal, hint, cats, scores, used, caseNo } = state;
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ players, impostors, time, goal, hint, cats, scores, used, caseNo })); } catch (e) {}
+  const { players, recent, impostors, time, goal, hint, cats, scores, used, caseNo } = state;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ players, recent, impostors, time, goal, hint, cats, scores, used, caseNo })); } catch (e) {}
 }
 
 const $ = id => document.getElementById(id);
@@ -946,7 +1049,7 @@ function show(id) {
   fitLines($(id));
   if (id === "s-pass") fitName($("pass-name"));
   if (id === "s-vote") fitSuspects();
-  if (id === "s-talk") { const v = document.querySelector("#first-who .v"); v && fitName(v, 24, 14); }
+  if (id === "s-talk" && state.round && state.round.speak) renderSpeakers();
 }
 function go(id, dir = "fwd") {
   endNav();
@@ -996,6 +1099,7 @@ let sheetResolve = null;
 // abre o painel com uma lista de ações; devolve o id escolhido (ou null se cancelar)
 function sheet(title, text, actions) {
   if (sheetResolve) closeSheet(null);
+  const oldEx = $("examples"); oldEx && oldEx.remove();
   $("sheet-title").textContent = title; $("sheet-text").textContent = text;
   $("sheet-btns").innerHTML = actions.map(a => a.kind === "opt" || a.kind === "opt danger"
     ? `<button class="${a.kind}" data-id="${a.id}"><svg class="i"><use href="#${a.icon}"/></svg><span><b>${a.label}</b>${a.sub ? `<small>${a.sub}</small>` : ""}</span></button>`
@@ -1058,7 +1162,7 @@ function fitName(el, max = 64, min = 20) {
 }
 
 /* ---------- Capa: fila de credenciais que se renova ---------- */
-const COVER_WORDS = CATEGORIES.map(c => ({ cat: c.name, words: c.words.filter(w => !w.includes(" ") && w.length <= 9) })).filter(c => c.words.length > 4);
+const COVER_WORDS = CATEGORIES.map(c => ({ cat: c.name, words: c.words.filter(w => !w.includes(" ") && !w.includes("-") && w.length <= 8) })).filter(c => c.words.length > 4);
 let coverTimer = 0, coverImp = -1;
 function coverDeal(first) {
   const box = $("lineup");
@@ -1073,13 +1177,22 @@ function coverDeal(first) {
     box.innerHTML = [0, 1, 2, 3, 4, 5].map(i => `<div class="mini deal${i === imp ? " imp" : ""}" style="--i:${i}">${card(i)}</div>`).join("");
     $("lineup-cat").textContent = pack.cat;
     $("lineup-n").textContent = visible + " agentes";
+    requestAnimationFrame(fitMinis);
     return;
   }
   [...box.children].forEach((el, i) => {
     setTimeout(() => {
       el.classList.remove("deal", "flip"); void el.offsetWidth; el.classList.add("flip");
-      setTimeout(() => { el.classList.toggle("imp", i === imp); el.innerHTML = card(i); if (i === 0) $("lineup-cat").textContent = pack.cat; }, 230);
+      setTimeout(() => { el.classList.toggle("imp", i === imp); el.innerHTML = card(i); fitMinis(); if (i === 0) $("lineup-cat").textContent = pack.cat; }, 230);
     }, i * 70);
+  });
+}
+// cada palavra da credencial diminui até caber (celular pequeno)
+function fitMinis() {
+  document.querySelectorAll("#lineup .mini-word").forEach(el => {
+    el.style.fontSize = "";
+    let f = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth + 1 && f > 9) { f -= .5; el.style.fontSize = f + "px"; }
   });
 }
 function coverStart() {
@@ -1111,6 +1224,12 @@ function renderSetup(fresh = -1) {
   $("imp-help").textContent = n < 3 ? "Precisa de 3 jogadores ou mais" : `Até ${maxImpostors()} com essa turma`;
   $("time-label").textContent = fmt(state.time);
   $("time-minus").disabled = state.time <= 30;
+  const rec = (state.recent || []).filter(n => !state.players.some(p => p.toLowerCase() === n.toLowerCase()));
+  state.recent = rec;
+  $("recent").innerHTML = rec.length ? `<span class="code">Recentes</span>` + rec.map((n, i) => `<button onclick="addRecent(${i})" aria-label="Adicionar ${esc(n)}"><svg class="i"><use href="#i-plus"/></svg>${esc(n)}</button>`).join("") : "";
+  $("summary").innerHTML = n >= 3
+    ? `<b>${n}</b> jogadores · <b>${Math.min(state.impostors, maxImpostors())}</b> impostor${state.impostors > 1 ? "es" : ""} · <b>${fmt(state.time)}</b> · meta <b>${goal()}</b> · <b>${state.cats.length}</b> categorias`
+    : "";
   if (goal() < goalFloor()) state.goal = GOALS.find(g => g >= goalFloor()) || 30;
   $("goal-label").textContent = goal();
   $("goal-minus").disabled = GOALS.indexOf(goal()) <= 0 || GOALS[GOALS.indexOf(goal()) - 1] < goalFloor();
@@ -1131,6 +1250,12 @@ function renderSetup(fresh = -1) {
   btn.disabled = n < 3 || !state.cats.length;
   btn.firstChild.textContent = n < 3 ? `Faltam ${3 - n} jogador${3 - n > 1 ? "es" : ""} ` : !state.cats.length ? "Ligue uma categoria " : "Começar ";
 }
+function addRecent(i) {
+  const name = (state.recent || [])[i];
+  if (!name || state.players.some(p => p.toLowerCase() === name.toLowerCase())) return;
+  state.players.push(name); state.recent.splice(i, 1);
+  tap(); save(); renderSetup(state.players.length - 1);
+}
 function addPlayer(e) {
   e.preventDefault();
   const input = $("player-input"), name = input.value.trim().replace(/\s+/g, " ");
@@ -1147,7 +1272,11 @@ function addPlayer(e) {
 function removePlayer(i) {
   const row = $("player-list").children[i];
   tap();
-  const done = () => { state.players.splice(i, 1); save(); renderSetup(); };
+  const done = () => {
+    const [gone] = state.players.splice(i, 1);
+    state.recent = [gone, ...(state.recent || []).filter(n => n.toLowerCase() !== gone.toLowerCase())].slice(0, 8);
+    save(); renderSetup();
+  };
   if (!row || reducedMotion) return done();
   row.classList.add("gone");
   row.addEventListener("animationend", done, { once: true });
@@ -1181,7 +1310,7 @@ function renderFiles(enter = false) {
   $("files").innerHTML = CATEGORIES.map((c, i) => {
     const on = state.cats.includes(c.id);
     const d = (5 + 7 * (c.words.length - min) / Math.max(1, max - min)).toFixed(1);
-    return `<button class="file" style="--i:${i}" aria-pressed="${on}" onclick="toggleCat('${c.id}', this)">
+    return `<button class="file" style="--i:${i}" aria-pressed="${on}" data-id="${c.id}" onclick="if(!fileHeld)toggleCat('${c.id}', this)">
       <span class="top"><span class="id">A-${pad2(i + 1)}</span><span class="mark"><svg class="i"><use href="#i-check"/></svg></span></span>
       <span class="gl">${glyph(c.id)}</span>
       <span class="nm">${c.name}</span>
@@ -1214,6 +1343,34 @@ function applyCats(next) {
     if ((el.getAttribute("aria-pressed") === "true") !== on) { el.setAttribute("aria-pressed", on); setTimeout(() => replay(el), (i % 8) * 25); }
   });
   state.cats = next; save(); renderTally();
+}
+// segurar uma pasta: mostra exemplos sem ligar/desligar
+let fileHeld = false, fileTimer = 0;
+(function filePeek() {
+  const box = $("files");
+  const cancel = () => { clearTimeout(fileTimer); document.querySelectorAll(".file.holding").forEach(f => f.classList.remove("holding")); };
+  box.addEventListener("pointerdown", e => {
+    const f = e.target.closest(".file"); if (!f) return;
+    fileHeld = false; f.classList.add("holding");
+    fileTimer = setTimeout(() => { fileHeld = true; f.classList.remove("holding"); showExamples(f.dataset.id); }, 520);
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => box.addEventListener(ev, cancel));
+  box.addEventListener("pointermove", e => { if (Math.abs(e.movementY) > 4) cancel(); });
+  box.addEventListener("contextmenu", e => { if (e.target.closest(".file")) e.preventDefault(); });
+})();
+async function showExamples(id) {
+  const c = CAT_BY_ID[id], on = state.cats.includes(id);
+  vibrate(20);
+  const ex = shuffle(c.words).slice(0, 8);
+  $("sheet-text").innerHTML = "";
+  const pending = sheet(c.name, `${c.note}. ${c.words.length} palavras, por exemplo:`, [
+    { id: "toggle", label: on ? "Desligar esta categoria" : "Ligar esta categoria", kind: on ? "line" : "" },
+    { id: "close", label: "Fechar", kind: "line" }]);
+  $("sheet-text").insertAdjacentHTML("afterend", `<div class="examples" id="examples">${ex.map((w, i) => `<span style="--i:${i}">${esc(w)}</span>`).join("")}</div>`);
+  const choice = await pending;
+  const exBox = $("examples"); exBox && exBox.remove();
+  setTimeout(() => { fileHeld = false; }, 50);
+  if (choice === "toggle") { const el = document.querySelector(`.file[data-id="${id}"]`); el && toggleCat(id, el); }
 }
 function setAllCats(on) { applyCats(on ? ALL_IDS.slice() : []); }
 function randomCats() { const ids = shuffle(ALL_IDS).slice(0, 5); applyCats(ALL_IDS.filter(x => ids.includes(x))); }
@@ -1267,6 +1424,7 @@ function showPass() {
   requestAnimationFrame(() => fitName($("pass-name")));
   $("pass-name-small").textContent = name;
   $("pass-step").textContent = pad2(r.idx + 1) + "/" + pad2(r.order.length);
+  $("seen").innerHTML = r.order.map((p, i) => avatar(p, i < r.idx ? "done" : i === r.idx ? "now" : "")).join("");
   resetHold();
   go("s-pass");
 }
@@ -1365,10 +1523,29 @@ function hideSecret() {
   r.idx < r.order.length ? showPass() : startTalk();
 }
 
+/* conferir a palavra na última chance: segurar abre a cortina */
+(function peekHold() {
+  const el = $("peek"); let t0 = 0, raf = 0;
+  const reset = () => { cancelAnimationFrame(raf); t0 = 0; if (!el.classList.contains("open")) { $("peek-bar").style.transform = "scaleX(0)"; $("peek-label").textContent = "Segure para conferir a palavra"; } };
+  const tick = t => {
+    const p = Math.min(1, (t - t0) / 400); $("peek-bar").style.transform = `scaleX(${p})`;
+    if (p >= 1) { el.classList.add("open"); vibrate(30); t0 = 0; return; }
+    raf = requestAnimationFrame(tick);
+  };
+  el.addEventListener("pointerdown", e => { if (el.classList.contains("open")) return; e.preventDefault(); t0 = performance.now(); $("peek-label").textContent = "Segurando..."; raf = requestAnimationFrame(tick); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => el.addEventListener(ev, () => { if (t0) reset(); }));
+  el.addEventListener("contextmenu", e => e.preventDefault());
+  el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.classList.add("open"); } });
+})();
+
 /* ---------- Pistas e cronômetro ---------- */
 let timerId = null, remaining = 0, total = 0, paused = false;
+// ordem da roda: começa em quem foi sorteado e segue a lista de jogadores
 function startTalk() {
-  $("first-who").innerHTML = avatar(state.round.first, "lg") + `<span class="v">${esc(state.round.first)}</span>`;
+  const r = state.round, at = Math.max(0, state.players.indexOf(r.first));
+  r.speak = { order: [...state.players.slice(at), ...state.players.slice(0, at)], idx: 0, lap: 1, done: [] };
+  renderSpeakers();
+  $("talk-help").innerHTML = "Cada um diz uma palavra de dica. Toque em <b>Falou</b> para passar a vez.";
   remaining = total = state.time; paused = false;
   setPauseBtn();
   renderTimer();
@@ -1391,6 +1568,24 @@ function renderTimer() {
   $("timer-status").textContent = remaining <= 0 ? "Tempo esgotado. Hora de votar." : paused ? "Pausado" : "";
   $("vote-go").classList.toggle("due", remaining <= 0);
 }
+function renderSpeakers() {
+  const sp = state.round.speak, who = sp.order[sp.idx];
+  const label = sp.lap > 1 ? `${sp.lap}ª volta · vez de` : (sp.idx === 0 && !sp.done.length ? "Começa" : "Vez de");
+  $("first-who").innerHTML = avatar(who, "lg") + `<span class="who-txt"><span class="k" id="spk-k">${label}</span><span class="v">${esc(who)}</span></span>`;
+  $("spk-list").innerHTML = sp.order.map((p, i) =>
+    `<button class="spk ${sp.done.includes(p) ? "done" : ""} ${i === sp.idx ? "now" : ""}" onclick="setSpeaker(${i})" aria-label="${esc(p)}${sp.done.includes(p) ? ", já falou" : ""}">${avatar(p)}<span class="nm">${esc(p)}</span></button>`).join("");
+  const v = document.querySelector("#first-who .v");
+  if (v && v.clientWidth) fitName(v, 24, 13);
+}
+function nextSpeaker() {
+  const sp = state.round.speak, who = sp.order[sp.idx];
+  if (!sp.done.includes(who)) sp.done.push(who);
+  tap();
+  if (sp.done.length >= sp.order.length) { sp.lap++; sp.done = []; sp.idx = 0; $("talk-help").innerHTML = "Todos falaram. Mais uma volta de dicas, ou toquem em <b>Votar</b>."; }
+  else { let n = sp.idx; do { n = (n + 1) % sp.order.length; } while (sp.done.includes(sp.order[n])); sp.idx = n; }
+  renderSpeakers();
+}
+function setSpeaker(i) { state.round.speak.idx = i; tap(); renderSpeakers(); }
 function setPauseBtn() {
   $("pause-btn").innerHTML = paused
     ? '<svg class="i"><use href="#i-play"/></svg> Continuar'
@@ -1414,26 +1609,48 @@ function beep() {
 
 /* ---------- Votação ---------- */
 function goVote() {
-  state.round.selected = null;
+  state.round.selected = null; state.round.votes = {};
   $("vote-notice").classList.remove("on");
   renderVote(true);
   go("s-vote");
 }
+const voters = () => state.players.length - state.round.out.length;
+const totalVotes = () => Object.values(state.round.votes || {}).reduce((a, b) => a + b, 0);
+// o mais votado vira o acusado; empate deixa ninguém selecionado
+function leaderOf(votes) {
+  const e = Object.entries(votes).filter(([, n]) => n > 0);
+  if (!e.length) return { sel: null, tied: [] };
+  const top = Math.max(...e.map(([, n]) => n)), best = e.filter(([, n]) => n === top).map(([p]) => p);
+  return best.length === 1 ? { sel: best[0], tied: [] } : { sel: null, tied: best };
+}
 function renderVote(enter = false) {
-  const r = state.round;
+  const r = state.round; r.votes = r.votes || {};
+  const { tied } = leaderOf(r.votes);
   $("vote-list").classList.toggle("stagger", enter);
   $("vote-list").innerHTML = state.players.map((p, i) => {
-    const caught = r.out.includes(p), sel = r.selected === p;
-    return `<button class="suspect ${caught ? "caught" : ""}" style="--i:${i}" aria-pressed="${sel}" onclick="selectVote(${i})" ${caught ? 'aria-disabled="true"' : ""}>
-      ${avatar(p)}<span class="name">${esc(p)}</span>${caught ? '<span class="tag">Detido</span>' : sel ? '<span class="tag">Acusado</span>' : ""}</button>`;
+    const caught = r.out.includes(p), sel = r.selected === p, n = r.votes[p] || 0;
+    const pips = n ? `<span class="pips">${"<i></i>".repeat(Math.min(n, 6))}</span><b>${n}</b>` : "";
+    return `<div class="suspect ${caught ? "caught" : ""} ${tied.includes(p) ? "tied" : ""}" style="--i:${i}" role="button" tabindex="${caught ? -1 : 0}" aria-pressed="${sel}" onclick="selectVote(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectVote(${i})}" ${caught ? 'aria-disabled="true"' : ""} aria-label="${esc(p)}: ${n} voto${n === 1 ? "" : "s"}">
+      ${avatar(p)}<span class="name">${esc(p)}</span>${caught ? '<span class="tag">Detido</span>'
+        : `<span class="vc">${pips}${n ? `<button class="minus" onclick="event.stopPropagation();unvote(${i})" aria-label="Tirar um voto de ${esc(p)}"><svg class="i"><use href="#i-minus"/></svg></button>` : ""}</span>`}</div>`;
   }).join("");
-  const btn = $("vote-btn");
+  const tv = totalVotes(), btn = $("vote-btn");
+  $("vote-count").textContent = `${tv} de ${voters()} votos`;
+  $("vote-reset").disabled = !tv;
   btn.disabled = !r.selected;
-  btn.firstChild.textContent = r.selected ? `Acusar ${r.selected} ` : "Toque em um suspeito ";
+  btn.firstChild.textContent = r.selected ? `Acusar ${r.selected} ` : tied.length ? "Empate: votem de novo " : "Toque nos nomes para votar ";
+}
+function resetVotes() { state.round.votes = {}; state.round.selected = null; tap(); renderVote(); fitSuspects(); }
+function unvote(i) {
+  const r = state.round, p = state.players[i];
+  if (!r.votes[p]) return;
+  r.votes[p]--; r.selected = leaderOf(r.votes).sel;
+  tap(); renderVote(); fitSuspects();
 }
 // nome comprido na votação: diminui até caber inteiro, sem quebrar no meio da palavra
 function fitSuspects() {
   document.querySelectorAll("#vote-list .name").forEach(n => {
+    if (n.closest(".caught")) return;
     if (!n.clientWidth) return;
     n.style.fontSize = "";
     let f = parseFloat(getComputedStyle(n).fontSize);
@@ -1443,14 +1660,20 @@ function fitSuspects() {
 function selectVote(i) {
   const r = state.round, p = state.players[i];
   if (r.out.includes(p)) return;
-  r.selected = r.selected === p ? null : p;
+  r.votes = r.votes || {};
+  if (totalVotes() >= voters()) {  // cada jogador vota uma vez
+    const n = $("vote-notice"); n.innerHTML = "Todos já votaram. Use <b>−</b> para corrigir um voto.";
+    n.classList.remove("on"); void n.offsetWidth; n.classList.add("on"); vibrate([20, 40, 20]); return;
+  }
+  r.votes[p] = (r.votes[p] || 0) + 1;
+  r.selected = leaderOf(r.votes).sel;
   tap(); renderVote(); fitSuspects(); replay($("vote-list").children[i]);
 }
 function confirmVote() {
   const r = state.round, who = r.selected;
   if (!who) return;
   if (r.impostors.includes(who)) {
-    r.out.push(who); r.selected = null;
+    r.out.push(who); r.selected = null; r.votes = {};
     const left = r.impostors.filter(p => !r.out.includes(p)).length;
     if (left) {
       vibrate(40);
@@ -1462,6 +1685,7 @@ function confirmVote() {
     }
     $("guess-name").textContent = r.impostors.length > 1 ? "Todos os impostores foram pegos" : `${who} era o impostor`;
     $("guess-stamp").textContent = r.impostors.length > 1 ? "Todos pegos" : "Pego!";
+    $("peek").classList.remove("open"); $("peek-word").textContent = r.word; $("peek-label").textContent = "Segure para conferir a palavra";
     go("s-guess");
   } else {
     r.innocent = who;
