@@ -350,6 +350,9 @@ A 148px amber serrated wax seal with a white keyhole on the cover; at 112px insi
 ### Confirm Sheet
 A bottom sheet in place of the browser's confirm dialog. It has a navy 42% scrim, a sheet-colored panel with an 8px top radius, a 36px grab handle, an expanded uppercase 24px question, ink-2 body text, and two full-width buttons: the amber destructive action on top and the hairline "keep going" below it, which takes focus. It rises 32px over .32s. The scrim, Esc, or the phone's back button cancels it. On desktop it is centered at 420px with all four corners rounded.
 
+### Round Menu
+On round screens the top-left control is a menu (≡) instead of a close. It opens the Confirm Sheet as an action list: option rows are 68px, paper fill, 1.5px hairline inset, a 24px icon, a 16.5px bold label and a 13.5px ink-2 explanation. The destructive row ("Recomeçar partida") uses amber-deep for its label and icon. A navy "Continuar jogando" slab closes the list and takes focus. The phone's back button opens the same menu during a round, and the timer pauses while it is open. Restarting asks for a second confirmation only when someone already has points.
+
 ### Initials Badge
 A 38px square with a 4px radius and mono 600 initials (first and last word). There are three tones by player order: sky-wash/sky-ink, navy/sheet, and paper-2/navy with a hairline. Sizes are 46px (who starts) and 30px (scoreboard). The accused badge turns amber.
 

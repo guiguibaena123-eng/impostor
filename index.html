@@ -110,6 +110,7 @@
   @keyframes stamp-in { from { opacity: 0; transform: rotate(-4deg) scale(1.6); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
   @keyframes grow { from { transform: scaleX(0); } }
   .pop { animation: press .32s var(--ease); }
+  .screen.fresh { animation: rise .4s var(--ease); }
   .stagger > * { animation: rise .42s var(--ease) both; animation-delay: calc(var(--i, 0) * 28ms); }
 
   /* etapas da rodada */
@@ -413,6 +414,15 @@
   .sheet p { margin: 0 0 22px; color: var(--ink-2); font-size: 16px; }
   .sheet-btns { display: grid; gap: 10px; }
   .sheet-btns .btn { justify-content: center; }
+  .opt { width: 100%; display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 14px; text-align: left;
+    border-radius: 4px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--rule); transition: box-shadow .2s, background .2s, transform .15s var(--ease); }
+  .opt:active { transform: scale(.985); }
+  .opt .i { width: 24px; height: 24px; color: var(--ink-2); }
+  .opt b { display: block; font-stretch: 112%; font-size: 16.5px; font-weight: 700; line-height: 1.2; }
+  .opt small { display: block; margin-top: 3px; font-size: 13.5px; line-height: 1.35; color: var(--ink-2); }
+  .opt.danger b, .opt.danger .i { color: var(--amber-deep); }
+  .sheet-btns .btn.stay { margin-top: 4px; }
+  @media (hover: hover) { .opt:hover { box-shadow: inset 0 0 0 1.5px var(--ink-3); background: var(--sheet); } }
 
   /* aviso de nome repetido */
   .field-msg { margin: 8px 0 0; font-size: 14px; color: var(--amber-deep); min-height: 0; }
@@ -475,7 +485,11 @@
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4.5H9"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01"/></symbol>
+    <symbol id="i-exit" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
@@ -629,7 +643,7 @@
   <!-- ENVELOPE -->
   <section class="screen" id="s-pass" aria-label="Passar o celular">
     <div class="bar">
-      <button class="back" onclick="abortRound()" aria-label="Cancelar rodada"><svg class="i"><use href="#i-x"/></svg></button>
+      <button class="back" onclick="roundMenu()" aria-label="Menu da rodada"><svg class="i"><use href="#i-menu"/></svg></button>
       <span class="code">Jogador <b id="pass-step">01/03</b></span>
     </div>
     <div class="progress" aria-label="Etapa 1 de 4"><span class="seg now"><i></i>Segredo</span><span class="seg"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
@@ -660,7 +674,7 @@
   <!-- CONVERSA -->
   <section class="screen" id="s-talk" aria-label="Hora das dicas">
     <div class="bar">
-      <button class="back" onclick="abortRound()" aria-label="Cancelar rodada"><svg class="i"><use href="#i-x"/></svg></button>
+      <button class="back" onclick="roundMenu()" aria-label="Menu da rodada"><svg class="i"><use href="#i-menu"/></svg></button>
       <span class="code case-ref"></span>
     </div>
     <div class="progress" aria-label="Etapa 2 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg now"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
@@ -730,7 +744,10 @@
     </div>
     <div class="foot">
       <button class="btn" id="next-btn" onclick="nextOrWin()">Próxima rodada <svg class="i"><use href="#i-arrow"/></svg></button>
-      <button class="btn line" onclick="exitToSetup()">Mudar jogadores</button>
+      <div class="row2">
+        <button class="btn line" onclick="exitToSetup()">Mudar jogadores</button>
+        <button class="btn line" onclick="restartMatch()"><svg class="i"><use href="#i-redo"/></svg> Recomeçar</button>
+      </div>
     </div>
   </section>
 
@@ -759,10 +776,7 @@
   <div class="sheet">
     <h3 id="sheet-title"></h3>
     <p id="sheet-text"></p>
-    <div class="sheet-btns">
-      <button class="btn alarm" id="sheet-yes"></button>
-      <button class="btn line" id="sheet-no"></button>
-    </div>
+    <div class="sheet-btns" id="sheet-btns"></div>
   </div>
 </div>
 
@@ -880,7 +894,8 @@ function go(id, dir = "fwd") {
   root.dataset.dir = dir;
   current = id;
   // a credencial tem sua própria abertura (o selo se rompe)
-  if (!from || from.id === id || reducedMotion || id === "s-secret") { show(id); return; }
+  if (!from || reducedMotion || id === "s-secret") { show(id); return; }
+  if (from.id === id) { show(id); replay($(id), "fresh"); return; }
   // congela a tela antiga onde ela está na janela, e a nova desliza por cima
   const app = $("app"), r = from.getBoundingClientRect(), a = app.getBoundingClientRect();
   from.classList.add("leaving", "nav-" + dir);
@@ -895,14 +910,14 @@ function go(id, dir = "fwd") {
 // Cada tela tem uma "tela anterior" fixa. O voltar do jogo e o do celular fazem a mesma coisa.
 const PARENT = { "s-rules": "s-home", "s-setup": "s-home", "s-files": "s-setup", "s-vote": "s-talk" };
 async function leaveRound() {
-  if (current !== "s-result" && current !== "s-win" && !(await ask("Sair da rodada?", "O segredo desta rodada será descartado e ninguém ganha pontos.", "Sair da rodada", "Continuar jogando"))) return;
   clearInterval(timerId); state.round = null; keepAwake(false);
   go("s-setup", "back");
 }
 function goBack() {
   if (current === "s-home") return;
   if (PARENT[current]) go(PARENT[current], "back");
-  else if (ROUND_SCREENS.has(current)) leaveRound();
+  else if (current === "s-result" || current === "s-win") leaveRound();
+  else if (ROUND_SCREENS.has(current)) roundMenu();
   else go("s-home", "back");
 }
 function exitToSetup() { state.round = null; keepAwake(false); go("s-setup", "back"); }
@@ -910,7 +925,7 @@ function exitToSetup() { state.round = null; keepAwake(false); go("s-setup", "ba
 history.replaceState({ base: true }, "");
 history.pushState({ app: true }, "");
 addEventListener("popstate", () => {
-  if (sheetResolve) { closeSheet(false); history.pushState({ app: true }, ""); return; }  // voltar fecha o painel
+  if (sheetResolve) { closeSheet(null); history.pushState({ app: true }, ""); return; }  // voltar fecha o painel
   if (current === "s-home") { history.back(); return; }  // na capa, voltar sai do jogo
   goBack();
   history.pushState({ app: true }, "");
@@ -918,23 +933,28 @@ addEventListener("popstate", () => {
 
 /* painel de confirmação no visual do jogo */
 let sheetResolve = null;
-function ask(title, text, yes, no) {
-  if (sheetResolve) closeSheet(false);
+// abre o painel com uma lista de ações; devolve o id escolhido (ou null se cancelar)
+function sheet(title, text, actions) {
+  if (sheetResolve) closeSheet(null);
   $("sheet-title").textContent = title; $("sheet-text").textContent = text;
-  $("sheet-yes").textContent = yes; $("sheet-no").textContent = no;
+  $("sheet-btns").innerHTML = actions.map(a => a.kind === "opt" || a.kind === "opt danger"
+    ? `<button class="${a.kind}" data-id="${a.id}"><svg class="i"><use href="#${a.icon}"/></svg><span><b>${a.label}</b>${a.sub ? `<small>${a.sub}</small>` : ""}</span></button>`
+    : `<button class="btn ${a.kind}" data-id="${a.id}" id="sheet-${a.id}">${a.label}</button>`).join("");
   $("sheet").classList.add("on"); $("sheet").setAttribute("aria-hidden", "false"); tap();
-  setTimeout(() => $("sheet-no").focus({ preventScroll: true }), 60);
+  setTimeout(() => { const b = $("sheet-btns").lastElementChild; b && b.focus({ preventScroll: true }); }, 60);
   return new Promise(r => sheetResolve = r);
+}
+async function ask(title, text, yes, no) {
+  return (await sheet(title, text, [{ id: "yes", label: yes, kind: "alarm" }, { id: "no", label: no, kind: "line" }])) === "yes";
 }
 function closeSheet(v) {
   if (!sheetResolve) return;
   $("sheet").classList.remove("on"); $("sheet").setAttribute("aria-hidden", "true");
-  const r = sheetResolve; sheetResolve = null; r(v);
+  const r = sheetResolve; sheetResolve = null; r(v === false ? null : v);
 }
-$("sheet-yes").addEventListener("click", () => closeSheet(true));
-$("sheet-no").addEventListener("click", () => closeSheet(false));
-$("sheet").addEventListener("click", e => { if (e.target.id === "sheet") closeSheet(false); });
-addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(false); });
+$("sheet-btns").addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) closeSheet(b.dataset.id); });
+$("sheet").addEventListener("click", e => { if (e.target.id === "sheet") closeSheet(null); });
+addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(null); });
 
 /* tela acesa durante a rodada */
 let wakeLock = null;
@@ -1113,7 +1133,26 @@ function startRound() {
   save();
   showPass();
 }
-function abortRound() { leaveRound(); }
+function abortRound() { roundMenu(); }
+function discardRound() { clearInterval(timerId); state.round = null; }
+const hasPoints = () => state.players.some(p => (state.scores[p] || 0) > 0);
+// menu da rodada: aparece no botão ≡ e no voltar do celular durante a rodada
+async function roundMenu() {
+  const choice = await sheet("Menu da rodada", "A rodada fica parada enquanto vocês escolhem.", [
+    { id: "new", icon: "i-dice", kind: "opt", label: "Nova rodada", sub: "Sorteia outra palavra e outro impostor. O placar continua." },
+    { id: "restart", icon: "i-redo", kind: "opt danger", label: "Recomeçar partida", sub: "Zera o placar de todos e começa do zero." },
+    { id: "exit", icon: "i-exit", kind: "opt", label: "Sair para a lista de jogadores", sub: "Esta rodada é descartada." },
+    { id: "stay", kind: "stay", label: "Continuar jogando" }
+  ]);
+  if (choice === "new") { discardRound(); startRound(); }
+  else if (choice === "restart") restartMatch();
+  else if (choice === "exit") { discardRound(); keepAwake(false); go("s-setup", "back"); }
+}
+async function restartMatch() {
+  if (hasPoints() && !(await ask("Recomeçar a partida?", "Os pontos de todos os jogadores voltam para zero e uma rodada nova começa.", "Recomeçar do zero", "Cancelar"))) return;
+  discardRound(); state.scores = {}; save();
+  startRound();
+}
 function showPass() {
   const r = state.round, name = r.order[r.idx];
   $("pass-name").textContent = name;
@@ -1231,7 +1270,7 @@ function startTalk() {
 function runTimer() {
   clearInterval(timerId);
   timerId = setInterval(() => {
-    if (paused || remaining <= 0) return;
+    if (paused || sheetResolve || remaining <= 0) return;
     remaining--; renderTimer();
     if (remaining === 0) { beep(); vibrate([250, 120, 250]); }
     else if (remaining <= 3) vibrate(25);
