@@ -72,8 +72,43 @@
   #app::after { bottom: calc(8px + env(safe-area-inset-bottom)); right: max(8px, calc(50% - 222px)); border-width: 0 1px 1px 0; }
 
   .screen { display: none; min-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); flex-direction: column; }
-  .screen.active { display: flex; animation: enter .32s var(--ease); }
+  .screen.active { display: flex; animation: in-r .3s var(--ease); }
+  html[data-dir="back"] .screen.active { animation-name: in-l; }
+  html.vt .screen.active { animation: none; }
   @keyframes enter { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes in-r { from { opacity: 0; transform: translateX(26px); } }
+  @keyframes in-l { from { opacity: 0; transform: translateX(-26px); } }
+  @keyframes out-l { to { opacity: 0; transform: translateX(-26px); } }
+  @keyframes out-r { to { opacity: 0; transform: translateX(26px); } }
+
+  /* troca de tela com View Transitions (Chrome/Safari novos) */
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .28s; animation-timing-function: var(--ease); }
+  html[data-dir="fwd"]::view-transition-old(root) { animation-name: out-l; }
+  html[data-dir="fwd"]::view-transition-new(root) { animation-name: in-r; }
+  html[data-dir="back"]::view-transition-old(root) { animation-name: out-r; }
+  html[data-dir="back"]::view-transition-new(root) { animation-name: in-l; }
+
+  /* micro-animações de seleção */
+  @keyframes press { 40% { transform: scale(.95); } 100% { transform: scale(1); } }
+  @keyframes nudge { 30% { transform: translateY(-4px) rotate(-6deg); } 60% { transform: translateY(1px) rotate(2deg); } }
+  @keyframes row-in { from { opacity: 0; transform: translateX(-14px); } }
+  @keyframes row-out { to { opacity: 0; transform: translateX(28px); max-height: 0; min-height: 0; border-bottom-width: 0; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+  @keyframes bump-up { from { opacity: .1; transform: translateY(8px); } }
+  @keyframes bump-down { from { opacity: .1; transform: translateY(-8px); } }
+  @keyframes stamp-in { from { opacity: 0; transform: rotate(-4deg) scale(1.6); } to { opacity: 1; transform: rotate(-4deg) scale(1); } }
+  @keyframes grow { from { transform: scaleX(0); } }
+  .pop { animation: press .32s var(--ease); }
+  .stagger > * { animation: rise .42s var(--ease) both; animation-delay: calc(var(--i, 0) * 28ms); }
+
+  /* etapas da rodada */
+  .progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: -4px 0 20px; }
+  .progress .seg { display: flex; flex-direction: column; gap: 6px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; color: var(--ink-3); }
+  .progress .seg i { display: block; height: 3px; border-radius: 2px; background: var(--rule-soft); overflow: hidden; position: relative; }
+  .progress .seg i::after { content: ""; position: absolute; inset: 0; background: var(--sky-deep); transform-origin: left; transform: scaleX(0); }
+  .progress .seg.done i::after { transform: none; }
+  .progress .seg.now i::after { transform: none; animation: grow .6s var(--ease) .12s both; }
+  .progress .seg.now { color: var(--ink); font-weight: 600; }
 
   /* barra superior: navegação + código do caso */
   .bar { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-bottom: 18px; gap: 12px; }
@@ -113,6 +148,9 @@
 
   /* agentes */
   .agent { display: flex; align-items: center; gap: 14px; min-height: 52px; border-bottom: 1px solid var(--rule-soft); }
+  .agent { max-height: 90px; overflow: hidden; }
+  .agent.new { animation: row-in .38s var(--ease); }
+  .agent.gone { animation: row-out .26s var(--ease) forwards; pointer-events: none; }
   .agent .n { font-family: var(--mono); font-size: 12px; color: var(--ink-3); width: 22px; font-variant-numeric: tabular-nums; }
   .agent .name { flex: 1; font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
   .agent .rm { width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--ink-3); border-radius: 4px; }
@@ -130,6 +168,8 @@
   .stepper button { width: 44px; height: 44px; border-radius: 4px; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--rule); }
   .stepper button:active:not(:disabled) { background: var(--paper-2); }
   .stepper button:disabled { opacity: .3; }
+  .stepper output.up { animation: bump-up .28s var(--ease); }
+  .stepper output.down { animation: bump-down .28s var(--ease); }
   .stepper output { min-width: 58px; text-align: center; font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* interruptor */
@@ -153,7 +193,8 @@
   .chips { display: flex; gap: 8px; margin: 14px 0 16px; }
   .chip { height: 38px; padding: 0 14px; border-radius: 2px; box-shadow: inset 0 0 0 1.5px var(--rule);
     font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
-  .chip:active { background: var(--paper-2); }
+  .chip:active { background: var(--paper-2); transform: scale(.96); }
+  .chip { transition: transform .15s var(--ease); }
   .chip .i { width: 16px; height: 16px; }
 
   .files { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 10px; padding-top: 12px; }
@@ -166,7 +207,7 @@
   .file .top { display: flex; justify-content: space-between; align-items: center; }
   .file .id { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--ink-3); }
   .file .mark { width: 20px; height: 20px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px var(--ink-3); display: grid; place-items: center; transition: background .2s, box-shadow .2s; }
-  .file .mark .i { width: 14px; height: 14px; stroke-width: 2.4; opacity: 0; color: var(--ink); transition: opacity .2s; }
+  .file .mark .i { width: 14px; height: 14px; stroke-width: 2.4; color: var(--ink); stroke-dasharray: 21; stroke-dashoffset: 21; transition: stroke-dashoffset .32s var(--ease) .06s; }
   .file .gl .i { width: 30px; height: 30px; stroke-width: 1.4; margin: 6px 0 2px; }
   .file .nm { font-stretch: 112%; font-weight: 700; font-size: 16px; line-height: 1.15; color: var(--ink); }
   .file .nt { font-size: 13.5px; line-height: 1.35; }
@@ -175,7 +216,9 @@
   .file[aria-pressed="true"] { background: var(--sheet); color: var(--ink-2); box-shadow: 0 1px 2px rgba(15,36,53,.06), 0 8px 22px -12px rgba(15,36,53,.35); }
   .file[aria-pressed="true"]::before { background: var(--sky); }
   .file[aria-pressed="true"] .mark { background: var(--sky); box-shadow: none; }
-  .file[aria-pressed="true"] .mark .i { opacity: 1; }
+  .file[aria-pressed="true"] .mark .i { stroke-dashoffset: 0; }
+  .file.pop .gl .i { animation: nudge .5s var(--ease); }
+  .file::before { transition: background .25s var(--ease); }
   .file[aria-pressed="true"] .gl { color: var(--sky-ink); }
   .file[aria-pressed="true"] .dot { color: var(--sky-deep); }
   .file:active { transform: scale(.98); }
@@ -268,7 +311,7 @@
   .suspect.caught { background: var(--paper-2); box-shadow: none; color: var(--ink-3); pointer-events: none; }
   .suspect.caught .name { text-decoration: line-through; text-decoration-thickness: 2px; }
   .suspect .tag { position: absolute; right: 10px; top: 10px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--amber-deep); box-shadow: inset 0 0 0 1.5px currentColor; padding: 2px 6px; border-radius: 2px; transform: rotate(-4deg); }
+    color: var(--amber-deep); box-shadow: inset 0 0 0 1.5px currentColor; padding: 2px 6px; border-radius: 2px; transform: rotate(-4deg); animation: stamp-in .3s var(--ease) both; }
   .notice { margin-top: 18px; padding: 14px 16px; border-radius: 4px; background: var(--amber-wash); color: var(--amber-deep); font-size: 15px; display: none; }
   .notice.on { display: block; animation: enter .35s var(--ease); }
   .notice b { color: var(--ink); }
@@ -289,6 +332,7 @@
   .record .v.amber { color: var(--amber-deep); }
   .ledger { margin-top: 26px; }
   .ledger .lr { display: grid; grid-template-columns: 28px 1fr auto 44px; gap: 10px; align-items: center; min-height: 46px; border-bottom: 1px solid var(--rule-soft); }
+  .ledger .lr { animation: row-in .4s var(--ease) both; animation-delay: calc(.35s + var(--i, 0) * 60ms); }
   .ledger .pos { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
   .ledger .nm { font-size: 16px; font-weight: 500; overflow-wrap: anywhere; }
   .ledger .lr.lead .nm { font-weight: 700; }
@@ -351,7 +395,7 @@
       <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><use href="#seal"/></svg>
     </div>
     <div class="foot">
-      <button class="btn" onclick="go('s-setup')">Abrir caso <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" onclick="go('s-setup')">Jogar <svg class="i"><use href="#i-arrow"/></svg></button>
       <div class="row2">
         <button class="btn line" onclick="go('s-rules')">Como jogar</button>
         <button class="btn line" id="install-btn" onclick="installApp()" hidden><svg class="i"><use href="#i-down"/></svg> Instalar</button>
@@ -363,18 +407,18 @@
   <!-- PROTOCOLO -->
   <section class="screen" id="s-rules" aria-label="Como jogar">
     <div class="bar">
-      <button class="back" onclick="go('s-home')" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="back" onclick="goBack()" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
       <span class="code case-ref"></span>
     </div>
     <h2>Como jogar</h2>
     <ol class="steps">
-      <li><span>Coloquem o nome de todos os jogadores. São <b>3 ou mais</b>.</span></li>
-      <li><span>O celular passa de mão em mão. Cada um <b>segura o lacre</b>, vê a credencial sozinho e lacra de novo.</span></li>
-      <li><span>Todos recebem a <b>mesma palavra</b>, menos o impostor. A credencial dele vem com a palavra riscada.</span></li>
-      <li><span>Na sua vez, cada um diz <b>uma palavra de pista</b>. Óbvia demais entrega o jogo ao impostor.</span></li>
-      <li><span>O impostor disfarça e tenta descobrir a palavra pelas pistas dos outros.</span></li>
-      <li><span>Quando o tempo acabar, o grupo <b>vota em voz alta</b> e marca o acusado no celular.</span></li>
-      <li><span>Se o impostor for pego, ele ainda pode <b>dizer a palavra</b> para roubar a vitória.</span></li>
+      <li><span>Escrevam o nome de todos os jogadores (<b>3 ou mais</b>).</span></li>
+      <li><span>Passem o celular de mão em mão. Cada um <b>segura o selo</b> e vê seu segredo sem ninguém olhar.</span></li>
+      <li><span>Todos recebem a <b>mesma palavra</b>. Só o impostor não recebe.</span></li>
+      <li><span>Cada um diz <b>uma palavra de dica</b>. Se for óbvia demais, o impostor descobre.</span></li>
+      <li><span>O impostor disfarça e tenta adivinhar a palavra pelas dicas.</span></li>
+      <li><span>No fim, todos <b>votam em voz alta</b> e marcam o escolhido no celular.</span></li>
+      <li><span>Se o impostor for pego, ainda pode <b>acertar a palavra</b> e vencer.</span></li>
     </ol>
     <div class="field" style="margin-top:14px">
       <div class="field-head"><span class="field-title">Pontos</span></div>
@@ -385,22 +429,22 @@
       </div>
     </div>
     <div class="foot">
-      <button class="btn" onclick="go('s-setup')">Abrir caso <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" onclick="go('s-setup')">Jogar <svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
   </section>
 
   <!-- OPERAÇÃO -->
   <section class="screen" id="s-setup" aria-label="Preparar partida">
     <div class="bar">
-      <button class="back" onclick="go('s-home')" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="back" onclick="goBack()" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
       <span class="code case-ref"></span>
     </div>
-    <h2>Montar a operação</h2>
+    <h2>Nova partida</h2>
 
     <div class="field">
       <div class="field-head">
-        <span class="field-title">Agentes</span>
-        <span class="code"><b id="player-count">0</b> na mesa</span>
+        <span class="field-title">Jogadores</span>
+        <span class="code"><b id="player-count">0</b> jogando</span>
       </div>
       <div id="player-list"></div>
       <form class="add" onsubmit="addPlayer(event)">
@@ -410,7 +454,7 @@
     </div>
 
     <div class="field">
-      <div class="field-head"><span class="field-title">Regras da rodada</span></div>
+      <div class="field-head"><span class="field-title">Ajustes</span></div>
       <div class="line-item">
         <span class="label">Impostores<small id="imp-help">Até 1 com essa turma</small></span>
         <div class="stepper">
@@ -420,7 +464,7 @@
         </div>
       </div>
       <div class="line-item">
-        <span class="label">Tempo de pistas<small>Para falar e conversar</small></span>
+        <span class="label">Tempo de conversa<small>Para dar dicas e discutir</small></span>
         <div class="stepper">
           <button onclick="changeTime(-30)" aria-label="Menos tempo"><svg class="i"><use href="#i-minus"/></svg></button>
           <output id="time-label">3:00</output>
@@ -428,15 +472,15 @@
         </div>
       </div>
       <div class="line-item" style="cursor:pointer" onclick="toggleHint()">
-        <span class="label">Pista para o impostor<small>Ele vê de qual arquivo é a palavra</small></span>
-        <button class="switch" id="hint-switch" role="switch" aria-checked="true" aria-label="Pista para o impostor" onclick="event.stopPropagation();toggleHint()"></button>
+        <span class="label">Dica para o impostor<small>Ele vê a categoria da palavra</small></span>
+        <button class="switch" id="hint-switch" role="switch" aria-checked="true" aria-label="Dica para o impostor" onclick="event.stopPropagation();toggleHint()"></button>
       </div>
     </div>
 
     <div class="field">
       <button class="files-link" onclick="go('s-files')">
         <span class="label">
-          <span class="field-title">Arquivos de palavras</span>
+          <span class="field-title">Categorias</span>
           <small class="code" style="display:block;margin-top:6px" id="files-summary"></small>
           <span class="glyph-strip" id="glyph-strip"></span>
         </span>
@@ -445,18 +489,18 @@
     </div>
 
     <div class="foot">
-      <button class="btn" id="start-btn" onclick="startRound()">Distribuir credenciais <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" id="start-btn" onclick="startRound()">Começar <svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
   </section>
 
   <!-- ARQUIVOS -->
   <section class="screen" id="s-files" aria-label="Categorias">
     <div class="bar">
-      <button class="back" onclick="go('s-setup')" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="back" onclick="goBack()" aria-label="Voltar"><svg class="i"><use href="#i-back"/></svg></button>
       <span class="code case-ref"></span>
     </div>
-    <h2>Arquivos</h2>
-    <p class="lede">Escolha de quais arquivos sai a palavra secreta. Cada rodada sorteia um deles.</p>
+    <h2>Categorias</h2>
+    <p class="lede">Toque para ligar ou desligar. A palavra secreta sai de uma das ligadas.</p>
     <div class="tally">
       <span class="big" id="tally-cats">0<span>/0</span></span>
       <span class="code"><b id="tally-words">0</b> palavras em jogo</span>
@@ -468,7 +512,7 @@
     </div>
     <div class="files" id="files"></div>
     <div class="sticky-foot">
-      <button class="btn" id="files-done" onclick="go('s-setup')">Confirmar arquivos <svg class="i"><use href="#i-check"/></svg></button>
+      <button class="btn" id="files-done" onclick="goBack()">Pronto <svg class="i"><use href="#i-check"/></svg></button>
     </div>
   </section>
 
@@ -476,8 +520,9 @@
   <section class="screen" id="s-pass" aria-label="Passar o celular">
     <div class="bar">
       <button class="back" onclick="abortRound()" aria-label="Cancelar rodada"><svg class="i"><use href="#i-x"/></svg></button>
-      <span class="code">Credencial <b id="pass-step">01/03</b></span>
+      <span class="code">Jogador <b id="pass-step">01/03</b></span>
     </div>
+    <div class="progress" aria-label="Etapa 1 de 4"><span class="seg now"><i></i>Segredo</span><span class="seg"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <p class="handoff-to">Entregue o celular para</p>
     <h2 class="handoff-name" id="pass-name"></h2>
     <div class="envelope" id="envelope">
@@ -486,53 +531,55 @@
         <svg class="ring" viewBox="0 0 150 150" aria-hidden="true"><circle class="track" cx="75" cy="75" r="72"/><circle class="prog" id="hold-prog" cx="75" cy="75" r="72"/></svg>
         <svg class="seal" viewBox="0 0 120 120" aria-hidden="true"><use href="#seal"/></svg>
       </div>
-      <div class="hold-label" id="hold-label">Segure o lacre para abrir</div>
-      <div class="stamp-line"><span class="code">Somente para os olhos de</span><span class="code"><b id="pass-name-small"></b></span></div>
+      <div class="hold-label" id="hold-label">Segure o selo para ver</div>
+      <div class="stamp-line"><span class="code">Só para</span><span class="code"><b id="pass-name-small"></b></span></div>
     </div>
   </section>
 
   <!-- CREDENCIAL -->
   <section class="screen" id="s-secret" aria-label="Seu segredo">
     <div class="cred" id="cred">
-      <div class="cred-band"><span class="code" id="cred-status">Acesso liberado</span><span class="code" id="cred-step"></span></div>
+      <div class="cred-band"><span class="code" id="cred-status">Você sabe a palavra</span><span class="code" id="cred-step"></span></div>
       <div class="cred-body" id="cred-body"></div>
     </div>
     <div class="foot">
-      <button class="btn" onclick="hideSecret()">Lacrar e passar <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" onclick="hideSecret()">Esconder e passar <svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
   </section>
 
   <!-- CONVERSA -->
-  <section class="screen" id="s-talk" aria-label="Hora das pistas">
+  <section class="screen" id="s-talk" aria-label="Hora das dicas">
     <div class="bar">
       <button class="back" onclick="abortRound()" aria-label="Cancelar rodada"><svg class="i"><use href="#i-x"/></svg></button>
       <span class="code case-ref"></span>
     </div>
-    <h2>Hora das pistas</h2>
+    <div class="progress" aria-label="Etapa 2 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg now"><i></i>Dicas</span><span class="seg"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
+    <h2>Hora das dicas</h2>
     <div class="first"><span class="k">Começa</span><span class="v" id="first-name"></span></div>
     <div class="clock" id="clock">
       <div class="t" id="timer">3:00</div>
       <div class="track"><div class="fill" id="timer-fill"></div></div>
       <div class="status" id="timer-status"></div>
     </div>
-    <p class="talk-help">Cada um diz uma palavra de pista, seguindo a roda. Depois conversem e desconfiem.</p>
+    <p class="talk-help">Cada um diz uma palavra de dica, na ordem da roda. Depois, conversem.</p>
     <div class="foot">
       <div class="row2">
         <button class="btn line" id="pause-btn" onclick="togglePause()"><svg class="i"><use href="#i-pause"/></svg> Pausar</button>
         <button class="btn line" onclick="addTime()"><svg class="i"><use href="#i-plus"/></svg> 30 s</button>
       </div>
-      <button class="btn" onclick="goVote()">Ir para votação <svg class="i"><use href="#i-arrow"/></svg></button>
+      <button class="btn" onclick="goVote()">Votar <svg class="i"><use href="#i-arrow"/></svg></button>
     </div>
   </section>
 
   <!-- VOTAÇÃO -->
   <section class="screen" id="s-vote" aria-label="Votação">
     <div class="bar">
-      <button class="back" onclick="go('s-talk')" aria-label="Voltar para as pistas"><svg class="i"><use href="#i-back"/></svg></button>
+      <button class="back" onclick="go('s-talk', 'back')" aria-label="Voltar para as dicas"><svg class="i"><use href="#i-back"/></svg></button>
       <span class="code case-ref"></span>
     </div>
+    <div class="progress" aria-label="Etapa 3 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg done"><i></i>Dicas</span><span class="seg now"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <h2>Quem é o impostor?</h2>
-    <p class="lede">Votem em voz alta. Depois toquem em quem a maioria acusou.</p>
+    <p class="lede">Votem em voz alta e toquem no mais votado.</p>
     <div class="notice" id="vote-notice"></div>
     <div class="suspects" id="vote-list"></div>
     <div class="foot">
@@ -543,9 +590,10 @@
   <!-- ÚLTIMA CHANCE -->
   <section class="screen" id="s-guess" aria-label="Última chance">
     <div class="bar"><span></span><span class="code" style="color:var(--amber-deep)"><span class="case-ref"></span> · Detido</span></div>
+    <div class="progress" aria-label="Etapa 3 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg done"><i></i>Dicas</span><span class="seg now"><i></i>Votação</span><span class="seg"><i></i>Resultado</span></div>
     <div class="verdict"><div class="stamp alarm" id="guess-stamp">Pego!</div></div>
     <h2 style="text-align:center;margin-top:18px" id="guess-name"></h2>
-    <p class="lede" style="text-align:center;margin:12px auto 0">Última chance: o impostor diz em voz alta qual acha que é a palavra secreta.</p>
+    <p class="lede" style="text-align:center;margin:12px auto 0">Última chance: o impostor fala qual acha que é a palavra.</p>
     <div class="foot">
       <button class="btn" onclick="finish('caught')">Errou a palavra <svg class="i"><use href="#i-x"/></svg></button>
       <button class="btn line" onclick="finish('stolen')">Acertou a palavra <svg class="i"><use href="#i-check"/></svg></button>
@@ -555,13 +603,14 @@
   <!-- VEREDITO -->
   <section class="screen" id="s-result" aria-label="Resultado">
     <div class="bar"><span class="code">Caso <b id="result-case"></b></span><span class="code">Encerrado</span></div>
+    <div class="progress" aria-label="Etapa 4 de 4"><span class="seg done"><i></i>Segredo</span><span class="seg done"><i></i>Dicas</span><span class="seg done"><i></i>Votação</span><span class="seg now"><i></i>Resultado</span></div>
     <div class="verdict">
       <div class="stamp" id="result-stamp"></div>
       <p id="result-text"></p>
     </div>
     <div class="record">
       <div class="r"><span class="k">Palavra</span><span class="v word" id="result-word"></span></div>
-      <div class="r"><span class="k">Arquivo</span><span class="v" id="result-cat"></span></div>
+      <div class="r"><span class="k">Categoria</span><span class="v" id="result-cat"></span></div>
       <div class="r"><span class="k" id="result-imp-k">Impostor</span><span class="v amber" id="result-impostors"></span></div>
     </div>
     <div class="field" style="margin-top:28px">
@@ -570,7 +619,7 @@
     </div>
     <div class="foot">
       <button class="btn" onclick="startRound()">Próxima rodada <svg class="i"><use href="#i-arrow"/></svg></button>
-      <button class="btn line" onclick="go('s-setup')">Ajustar operação</button>
+      <button class="btn line" onclick="exitToSetup()">Mudar jogadores</button>
     </div>
   </section>
 
@@ -664,31 +713,66 @@ const maxImpostors = () => Math.max(1, Math.floor((state.players.length - 1) / 2
 const caseLabel = () => "Nº " + String(state.caseNo).padStart(4, "0");
 const vibrate = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
-function go(id) {
+/* ---------- Navegação: desliza entre telas e respeita o botão voltar do celular ---------- */
+const ROUND_SCREENS = new Set(["s-pass", "s-secret", "s-talk", "s-vote", "s-guess", "s-result"]);
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let current = "s-home", activeVT = null;
+function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $(id).classList.add("active");
   window.scrollTo(0, 0);
   if (id === "s-setup") renderSetup();
-  if (id === "s-files") renderFiles();
+  if (id === "s-files") renderFiles(true);
   if (id === "s-home") renderHome();
   document.querySelectorAll(".case-ref").forEach(el => el.textContent = "Caso " + caseLabel());
   fitLines($(id));
 }
+function go(id, dir = "fwd", fromHistory = false) {
+  const root = document.documentElement;
+  root.dataset.dir = dir;
+  // dentro da rodada a história é substituída, para o "voltar" não reabrir segredos
+  if (!fromHistory) {
+    if (ROUND_SCREENS.has(id) && ROUND_SCREENS.has(current)) history.replaceState({ id }, "");
+    else if (id !== current) history.pushState({ id }, "");
+  }
+  current = id;
+  // a credencial tem sua própria abertura (o selo se rompe)
+  if (activeVT) activeVT.skipTransition();
+  if (document.startViewTransition && !reducedMotion && id !== "s-secret") {
+    root.classList.add("vt");
+    const t = activeVT = document.startViewTransition(() => show(id));
+    t.ready.catch(() => {});
+    t.finished.catch(() => {}).finally(() => { if (activeVT === t) { activeVT = null; root.classList.remove("vt"); } });
+  } else show(id);
+}
+function goBack() { history.state && history.state.id !== "s-home" ? history.back() : go("s-home", "back"); }
+function exitToSetup() { state.round = null; go("s-setup", "back"); }
+addEventListener("popstate", e => {
+  const target = (e.state && e.state.id) || "s-home";
+  if (state.round && ROUND_SCREENS.has(current) && current !== "s-result") {
+    if (!confirm("Sair da rodada? O segredo desta rodada será descartado.")) { history.pushState({ id: current }, ""); return; }
+    clearInterval(timerId); state.round = null;
+  }
+  if (current === "s-result") state.round = null;
+  go(ROUND_SCREENS.has(target) ? "s-setup" : target, "back", true);
+});
+history.replaceState({ id: "s-home" }, "");
+const tap = () => vibrate(8);
 
 /* ---------- Capa ---------- */
 function renderHome() {
   $("case-no").textContent = caseLabel();
-  $("cover-facts").innerHTML = `<b>${CATEGORIES.length}</b> arquivos · <b>${num(CATEGORIES.reduce((n, c) => n + c.words.length, 0))}</b> palavras`;
+  $("cover-facts").innerHTML = `<b>${CATEGORIES.length}</b> categorias · <b>${num(CATEGORIES.reduce((n, c) => n + c.words.length, 0))}</b> palavras`;
 }
 
 /* ---------- Operação ---------- */
-function renderSetup() {
+function renderSetup(fresh = -1) {
   const n = state.players.length;
   $("player-count").textContent = n;
   $("player-list").innerHTML = n
-    ? state.players.map((p, i) => `<div class="agent"><span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>
+    ? state.players.map((p, i) => `<div class="agent${i === fresh ? " new" : ""}"><span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>
         <button class="rm" onclick="removePlayer(${i})" aria-label="Remover ${esc(p)}"><svg class="i"><use href="#i-x"/></svg></button></div>`).join("")
-    : `<p class="empty-note">Ninguém na mesa ainda. Digite o primeiro nome abaixo.</p>`;
+    : `<p class="empty-note">Ainda sem jogadores. Escreva o primeiro nome abaixo.</p>`;
 
   state.impostors = Math.min(state.impostors, maxImpostors());
   $("impostor-count").textContent = state.impostors;
@@ -699,12 +783,12 @@ function renderSetup() {
   $("hint-switch").setAttribute("aria-checked", state.hint);
 
   const words = state.cats.reduce((t, id) => t + CAT_BY_ID[id].words.length, 0);
-  $("files-summary").innerHTML = `<b>${state.cats.length}</b> de ${CATEGORIES.length} · ${num(words)} palavras`;
+  $("files-summary").innerHTML = `<b>${state.cats.length}</b> de ${CATEGORIES.length} ligadas · ${num(words)} palavras`;
   $("glyph-strip").innerHTML = state.cats.slice(0, 12).map(id => glyph(id)).join("") + (state.cats.length > 12 ? `<span class="code">+${state.cats.length - 12}</span>` : "");
 
   const btn = $("start-btn");
   btn.disabled = n < 3 || !state.cats.length;
-  btn.firstChild.textContent = n < 3 ? `Faltam ${3 - n} jogador${3 - n > 1 ? "es" : ""} ` : !state.cats.length ? "Escolha um arquivo " : "Distribuir credenciais ";
+  btn.firstChild.textContent = n < 3 ? `Faltam ${3 - n} jogador${3 - n > 1 ? "es" : ""} ` : !state.cats.length ? "Ligue uma categoria " : "Começar ";
 }
 function addPlayer(e) {
   e.preventDefault();
@@ -712,20 +796,37 @@ function addPlayer(e) {
   if (!name) return;
   if (state.players.some(p => p.toLowerCase() === name.toLowerCase())) { input.select(); return; }
   state.players.push(name); input.value = "";
-  save(); renderSetup(); input.focus();
+  tap(); save(); renderSetup(state.players.length - 1); input.focus();
 }
-function removePlayer(i) { state.players.splice(i, 1); save(); renderSetup(); }
-function changeImpostors(d) { state.impostors = Math.min(maxImpostors(), Math.max(1, state.impostors + d)); save(); renderSetup(); }
-function changeTime(d) { state.time = Math.min(600, Math.max(30, state.time + d)); save(); renderSetup(); }
-function toggleHint() { state.hint = !state.hint; save(); renderSetup(); }
+function removePlayer(i) {
+  const row = $("player-list").children[i];
+  tap();
+  const done = () => { state.players.splice(i, 1); save(); renderSetup(); };
+  if (!row || reducedMotion) return done();
+  row.classList.add("gone");
+  row.addEventListener("animationend", done, { once: true });
+}
+function bump(id, d) { const el = $(id); el.classList.remove("up", "down"); void el.offsetWidth; el.classList.add(d > 0 ? "up" : "down"); }
+function changeImpostors(d) {
+  const v = Math.min(maxImpostors(), Math.max(1, state.impostors + d));
+  if (v === state.impostors) return;
+  state.impostors = v; tap(); save(); renderSetup(); bump("impostor-count", d);
+}
+function changeTime(d) {
+  const v = Math.min(600, Math.max(30, state.time + d));
+  if (v === state.time) return;
+  state.time = v; tap(); save(); renderSetup(); bump("time-label", d);
+}
+function toggleHint() { state.hint = !state.hint; tap(); save(); renderSetup(); }
+function replay(el, cls = "pop") { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 
 /* ---------- Arquivos ---------- */
-function renderFiles() {
+function renderFiles(enter = false) {
   const max = Math.max(...CATEGORIES.map(c => c.words.length)), min = Math.min(...CATEGORIES.map(c => c.words.length));
   $("files").innerHTML = CATEGORIES.map((c, i) => {
     const on = state.cats.includes(c.id);
     const d = (5 + 7 * (c.words.length - min) / Math.max(1, max - min)).toFixed(1);
-    return `<button class="file" aria-pressed="${on}" onclick="toggleCat('${c.id}', this)">
+    return `<button class="file" style="--i:${i}" aria-pressed="${on}" onclick="toggleCat('${c.id}', this)">
       <span class="top"><span class="id">A-${pad2(i + 1)}</span><span class="mark"><svg class="i"><use href="#i-check"/></svg></span></span>
       <span class="gl">${glyph(c.id)}</span>
       <span class="nm">${c.name}</span>
@@ -733,6 +834,7 @@ function renderFiles() {
       <span class="mag"><span class="dot" style="width:${d}px;height:${d}px"></span>${c.words.length}</span>
     </button>`;
   }).join("");
+  $("files").classList.toggle("stagger", enter);
   renderTally();
 }
 function renderTally() {
@@ -740,16 +842,26 @@ function renderTally() {
   $("tally-cats").innerHTML = `${state.cats.length}<span>/${CATEGORIES.length}</span>`;
   $("tally-words").textContent = num(words);
   $("files-done").disabled = !state.cats.length;
-  $("files-done").firstChild.textContent = state.cats.length ? "Confirmar arquivos " : "Escolha ao menos um ";
+  $("files-done").firstChild.textContent = state.cats.length ? "Pronto " : "Ligue pelo menos uma ";
 }
 function toggleCat(id, el) {
   const on = !state.cats.includes(id);
   state.cats = on ? ALL_IDS.filter(x => x === id || state.cats.includes(x)) : state.cats.filter(x => x !== id);
   el.setAttribute("aria-pressed", on);
-  save(); renderTally();
+  tap(); replay(el); save(); renderTally();
 }
-function setAllCats(on) { state.cats = on ? ALL_IDS.slice() : []; save(); renderFiles(); }
-function randomCats() { const pickIds = shuffle(ALL_IDS).slice(0, 5); state.cats = ALL_IDS.filter(x => pickIds.includes(x)); save(); renderFiles(); }
+// liga/desliga só as que mudaram, cada uma com sua animação
+function applyCats(next) {
+  tap();
+  $("files").classList.remove("stagger");
+  document.querySelectorAll("#files .file").forEach((el, i) => {
+    const on = next.includes(ALL_IDS[i]);
+    if ((el.getAttribute("aria-pressed") === "true") !== on) { el.setAttribute("aria-pressed", on); setTimeout(() => replay(el), (i % 8) * 25); }
+  });
+  state.cats = next; save(); renderTally();
+}
+function setAllCats(on) { applyCats(on ? ALL_IDS.slice() : []); }
+function randomCats() { const ids = shuffle(ALL_IDS).slice(0, 5); applyCats(ALL_IDS.filter(x => ids.includes(x))); }
 
 /* ---------- Rodada ---------- */
 function drawWord() {
@@ -773,9 +885,10 @@ function startRound() {
   showPass();
 }
 function abortRound() {
+  if (!confirm("Sair da rodada? O segredo desta rodada será descartado.")) return;
   clearInterval(timerId);
   state.round = null;
-  go("s-setup");
+  go("s-setup", "back");
 }
 function showPass() {
   const r = state.round, name = r.order[r.idx];
@@ -787,13 +900,13 @@ function showPass() {
 }
 
 /* segurar o lacre */
-const HOLD_MS = 650, RING = 452.4;
+const HOLD_MS = 450, RING = 452.4;
 let holdStart = 0, holdRaf = 0;
 function resetHold() {
   cancelAnimationFrame(holdRaf); holdStart = 0;
   $("hold-prog").style.strokeDashoffset = RING;
   $("hold").classList.remove("pressing");
-  $("hold-label").textContent = "Segure o lacre para abrir";
+  $("hold-label").textContent = "Segure o selo para ver";
 }
 function holdTick(t) {
   const p = Math.min(1, (t - holdStart) / HOLD_MS);
@@ -806,7 +919,7 @@ function holdDown(e) {
   e.preventDefault();
   holdStart = performance.now();
   $("hold").classList.add("pressing");
-  $("hold-label").textContent = "Continue segurando";
+  $("hold-label").textContent = "Segurando...";
   holdRaf = requestAnimationFrame(holdTick);
 }
 function holdUp() { if (holdStart) resetHold(); }
@@ -821,21 +934,21 @@ function showSecret() {
   const r = state.round, name = r.order[r.idx], isImp = r.impostors.includes(name);
   const cred = $("cred");
   cred.classList.toggle("impostor", isImp);
-  $("cred-status").textContent = isImp ? "Acesso negado" : "Acesso liberado";
+  $("cred-status").textContent = isImp ? "Você é o impostor" : "Você sabe a palavra";
   $("cred-step").textContent = caseLabel();
   const others = r.impostors.length;
-  const meta = `<div class="cred-meta"><span class="k">Agente</span><span class="k">Credencial</span>
+  const meta = `<div class="cred-meta"><span class="k">Jogador</span><span class="k">Vez</span>
       <span class="v">${esc(name)}</span><span class="v code" style="font-size:14px">${pad2(r.idx + 1)}/${pad2(r.order.length)}</span></div>`;
   if (isImp) {
     $("cred-body").innerHTML = meta + `
       <div class="cred-word"><span class="k">Palavra secreta</span>
         <div class="redact" aria-label="Palavra escondida"><span style="width:92%"></span><span style="width:64%"></span></div>
         <div class="xl imp-title fit-line" data-max="96">Impostor</div></div>
-      <p class="cred-note">${state.hint ? `Pista: a palavra está no arquivo <b>${r.cat.name}</b>.` : "Sem pistas. Ouça os outros e disfarce."}${others > 1 ? ` Há <b>${others} impostores</b> nesta rodada.` : ""}</p>`;
+      <p class="cred-note">${state.hint ? `Dica: a palavra é da categoria <b>${r.cat.name}</b>.` : "Sem dica. Escute os outros e disfarce."}${others > 1 ? ` Há <b>${others} impostores</b> nesta rodada.` : ""}</p>`;
   } else {
     $("cred-body").innerHTML = meta + `
       <div class="cred-word"><span class="k">Palavra secreta</span><div class="word-fit" id="word-fit">${esc(r.word)}</div></div>
-      <p class="cred-note">Arquivo <b>${r.cat.name}</b>. ${others > 1 ? `Há <b>${others} impostores</b> na mesa.` : "Um de vocês não sabe a palavra."}</p>`;
+      <p class="cred-note">Categoria <b>${r.cat.name}</b>. ${others > 1 ? `Há <b>${others} impostores</b> na mesa.` : "Um de vocês não sabe a palavra."}</p>`;
   }
   go("s-secret");
   if (!isImp) fitWord($("word-fit")); else fitLines($("cred"));
@@ -929,21 +1042,27 @@ function beep() {
 function goVote() {
   state.round.selected = null;
   $("vote-notice").classList.remove("on");
-  renderVote();
+  renderVote(true);
   go("s-vote");
 }
-function renderVote() {
+function renderVote(enter = false) {
   const r = state.round;
+  $("vote-list").classList.toggle("stagger", enter);
   $("vote-list").innerHTML = state.players.map((p, i) => {
     const caught = r.out.includes(p), sel = r.selected === p;
-    return `<button class="suspect ${caught ? "caught" : ""}" aria-pressed="${sel}" onclick="selectVote(${i})" ${caught ? 'aria-disabled="true"' : ""}>
+    return `<button class="suspect ${caught ? "caught" : ""}" style="--i:${i}" aria-pressed="${sel}" onclick="selectVote(${i})" ${caught ? 'aria-disabled="true"' : ""}>
       <span class="n">${pad2(i + 1)}</span><span class="name">${esc(p)}</span>${caught ? '<span class="tag">Detido</span>' : sel ? '<span class="tag">Acusado</span>' : ""}</button>`;
   }).join("");
   const btn = $("vote-btn");
   btn.disabled = !r.selected;
   btn.firstChild.textContent = r.selected ? `Acusar ${r.selected} ` : "Toque em um suspeito ";
 }
-function selectVote(i) { const r = state.round, p = state.players[i]; if (r.out.includes(p)) return; r.selected = r.selected === p ? null : p; renderVote(); }
+function selectVote(i) {
+  const r = state.round, p = state.players[i];
+  if (r.out.includes(p)) return;
+  r.selected = r.selected === p ? null : p;
+  tap(); renderVote(); replay($("vote-list").children[i]);
+}
 function confirmVote() {
   const r = state.round, who = r.selected;
   if (!who) return;
@@ -978,7 +1097,7 @@ function finish(outcome) {
   if (outcome === "caught") {
     add(crew, 1);
     stamp.textContent = "Caso resolvido"; stamp.className = "stamp";
-    $("result-text").textContent = plural ? "Os impostores foram pegos e não acertaram a palavra. Cada agente do grupo ganha 1 ponto." : "O impostor foi pego e não acertou a palavra. Cada agente do grupo ganha 1 ponto.";
+    $("result-text").textContent = plural ? "Os impostores foram pegos e não acertaram a palavra. Cada jogador do grupo ganha 1 ponto." : "O impostor foi pego e não acertou a palavra. Cada jogadore do grupo ganha 1 ponto.";
   } else if (outcome === "stolen") {
     add(r.impostors, 2);
     stamp.textContent = "Palavra roubada"; stamp.className = "stamp alarm";
@@ -1003,7 +1122,7 @@ function renderScores(deltas = {}, imps = []) {
   const rows = state.players.map(p => [p, state.scores[p] || 0]).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   const top = rows.length ? rows[0][1] : 0;
   $("scoreboard").innerHTML = rows.map(([p, s], i) =>
-    `<div class="lr ${s > 0 && s === top ? "lead" : ""}"><span class="pos">${pad2(i + 1)}</span><span class="nm">${esc(p)}</span>
+    `<div class="lr ${s > 0 && s === top ? "lead" : ""}" style="--i:${i}"><span class="pos">${pad2(i + 1)}</span><span class="nm">${esc(p)}</span>
       <span class="delta ${imps.includes(p) ? "amber" : ""}">${deltas[p] ? "+" + deltas[p] : ""}</span><span class="pts">${s}</span></div>`).join("");
 }
 function resetScores() {
